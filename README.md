@@ -88,7 +88,7 @@ The sheets below show a 100% crop of the original on the left and of the script 
 
 ### Muskoka Wharf: Snapshot Realism photo edits
 
-These before-and-after pairs were created in Codex using Snapshot Realism. They show AI-assisted photo editing, including light-streak removal and changes to scene detail. The pairs illustrate the skill's editing workflow; the script-only comparisons above isolate `realism.py`.
+These before-and-after pairs were created in Codex using Snapshot Realism. They show AI-assisted photo editing, including light-streak removal and changes to scene detail. Codex's image model removed the streaks and regenerated each scene from Codex's own restoration-edit prompt; `realism.py` then finished the result, and Codex exported it as Ultra HDR. The skill has no flare-removal step of its own. The edited files carry the AI-generated label in their metadata. The script-only comparisons above isolate `realism.py`.
 
 [![Muskoka Wharf night plaza: original photo on the left and Snapshot Realism AI-assisted edit on the right](assets/demo/muskoka-wharf/plaza-comparison.jpg)](assets/demo/muskoka-wharf/plaza-comparison.jpg)
 
@@ -318,7 +318,7 @@ Other projects attack the same "plastic" look from other directions. Grain, frin
 <a id="limits"></a>
 ## ⚠️ Limits
 
-- The generation and editing stage can correct faces, hands, poses, lighting, text and background objects when requested. Results depend on the image model and need visual review. The finishing script handles capture processing; it does not reconstruct anatomy or scene geometry.
+- The generation and editing stage can fix faces, hands, poses, lighting, text and background objects when asked, but it can also redraw signs, text and fixtures (the Wharf plaza edit turned the line of sign text under the shop name into illegible lettering), so check the result at 100%. The finishing script handles capture processing; it does not reconstruct anatomy or scene geometry.
 - Higher capture strength adds capture artifacts. Changing airbrushed skin rendering or glossy hair structure requires a specific generation prompt or generative edit. When a generated reference should retain its identity or pose, permit the requested texture changes explicitly.
 - It does not authenticate images. It does not turn generated material into a camera photograph, and it must not be used to pass one off as one.
 - The origin label is easy to remove, signed or not (see the [threat model](#provenance)); it helps honest users and honest platforms, and nobody else. A `make_cert.py` signer is unknown to validators.
