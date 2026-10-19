@@ -13,7 +13,8 @@ photo reuse license. The files fall into three groups:
 
 - the original photographs;
 - the AI-assisted photo edits created in Codex using Snapshot Realism, labelled
-  "Snapshot Realism / AI-assisted edit" in the comparison sheets;
+  "Snapshot Realism / AI-assisted edit" in the comparison sheets and AI-generated
+  in their own metadata;
 - the script outputs and 100% crop sheets made by running `realism.py` on the
   originals with `--origin camera --preset night --seed 42`. They are derivatives
   of the originals and carry the same photo rights; only the code that made them
