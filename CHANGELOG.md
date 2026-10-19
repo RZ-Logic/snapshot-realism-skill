@@ -7,6 +7,7 @@ Tests and CI only. The skill and its ZIP are unchanged.
 ### Tests and CI
 
 - The test that an output named as a case variant of the input (`photo.jpg` for `Photo.JPG`) is refused never ran on macOS. It was gated on `os.path.normcase`, which folds case only on Windows, while macOS's default APFS volume is also case-insensitive. The test now probes its own temp folder and skips only where `photo.jpg` does not find `Photo.JPG`.
+- The workflow moves to `actions/checkout@v7` and `actions/setup-python@v7`, which run on Node 24. The v4 and v5 it used targeted Node 20, which GitHub has deprecated; every job ran them forced onto Node 24 with a warning.
 
 ## 0.6.1 (2026-10-19)
 
