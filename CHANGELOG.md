@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+Tests and CI only. The skill and its ZIP are unchanged.
+
+### Tests and CI
+
+- The test that an output named as a case variant of the input (`photo.jpg` for `Photo.JPG`) is refused never ran on macOS. It was gated on `os.path.normcase`, which folds case only on Windows, while macOS's default APFS volume is also case-insensitive. The test now probes its own temp folder and skips only where `photo.jpg` does not find `Photo.JPG`.
+
 ## 0.6.1 (2026-10-19)
 
 Instructions only. Pixels, metadata checks and signing are unchanged from 0.6.0; only the version string in the output metadata moves.
