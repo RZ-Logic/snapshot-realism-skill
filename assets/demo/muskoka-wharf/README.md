@@ -10,7 +10,12 @@ This folder shows two parts of the workflow:
 - **Snapshot Realism / AI-assisted edit:** the photo edits made during the
   project's demo work in Codex. These pairs show the skill's editing workflow.
 
-The original photos and completed edits are retained unchanged. Comparison
+The original photos are retained unchanged. The two edits are re-saved with the
+AI-generated label in their metadata (IPTC `trainedAlgorithmicMedia` and an EXIF
+description), because the copies supplied had lost it in transfer; the label was
+added with `realism.py --origin generated --preset day --capture-strength 0
+--wb-strength 0 --quality 95`, which applies no capture effects, so only JPEG
+re-encoding changed the pixels (mean difference under one code value). Comparison
 sheets arrange each pair with labels and source credit.
 
 ## Script output on the originals
@@ -47,8 +52,13 @@ folder; the copies in this folder were made the same way. Script version: 0.5.0.
 
 These pairs show the original photographs alongside the AI-assisted edits made
 in Codex using Snapshot Realism. The edits remove intrusive light streaks and
-change some scene detail, including foliage. They illustrate the editing
-workflow; the script-only comparisons above show capture processing separately.
+change some scene detail, including foliage. Codex's image model removed the
+streaks and regenerated each scene from Codex's own restoration-edit prompt;
+`realism.py` then finished the result, and Codex exported it as Ultra HDR. The
+skill has no flare-removal step of its own. Check edits like these at 100%: the
+plaza edit turned the "MUSKOKA MARKETPLACE" line under the shop sign into
+illegible lettering. The script-only comparisons above show capture processing
+separately.
 
 ### Night plaza
 
