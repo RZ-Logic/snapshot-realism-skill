@@ -30,8 +30,8 @@ jobs:
             install: "numpy pillow c2pa-python"
             label: " + c2pa-python"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
       - name: Install dependencies

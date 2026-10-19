@@ -832,9 +832,10 @@ class Cli(unittest.TestCase):
         self.assertIn("refusing to overwrite the input file", err)
         self.assertEqual(md5(src), before)
 
-    @unittest.skipUnless(os.path.normcase("A") == "a", "case-insensitive file system only")
     def test_case_variant_of_the_input_is_refused(self):
         src = self.save("Photo.JPG")
+        if not os.path.exists(self.path("photo.jpg")):  # probe this folder: normcase folds case on Windows only
+            self.skipTest("case-insensitive file system only")
         before = md5(src)
         code, _, _ = run([src, "--origin", "camera", "--preset", "day", "-o", self.path("photo.jpg"), "--overwrite"])
         self.assertEqual(code, 2)
