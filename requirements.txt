@@ -1,0 +1,6 @@
+# snapshot-realism: Python 3.9+. Floors verified with the full test suite on
+# Python 3.9.25 (the oldest numpy and Pillow releases with Python 3.9 wheels).
+numpy>=1.19.3
+Pillow>=8.0.0
+# optional: pillow-heif for HEIC input
+# optional: c2pa-python 0.38 or newer for --sign (Python 3.10+)

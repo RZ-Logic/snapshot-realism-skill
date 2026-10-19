@@ -1,0 +1,41 @@
+{
+  "version": "0.6.1",
+  "preset": "indoor",
+  "capture_strength": 1,
+  "wb_strength": 0.8,
+  "seed": 42,
+  "max_edge": 1672,
+  "origin": "generated",
+  "generation_counts": {
+    "plain": 1,
+    "skill": 1
+  },
+  "selected_skill_attempt": 1,
+  "white_balance": "no change (cool light left alone)",
+  "warning": "the input's C2PA Content Credentials are not carried over (the output only states its declared origin in EXIF and XMP); keep the original, or rerun with --sign CERT KEY to carry them over as the parent of a signed manifest",
+  "source": "https://www.pexels.com/photo/candid-picture-of-a-young-man-sitting-and-using-phone-16829778/",
+  "source_license": "Pexels License, distinct from repository MIT",
+  "output_size": [
+    941,
+    1672
+  ],
+  "usage": "Repository documentation example; see README.md and ../IMAGE-LICENSES.md",
+  "updated_at": "2026-10-19",
+  "baseline_reused": false,
+  "baseline_generated_at": "2026-10-19",
+  "qa_background_objects": [
+    "window frame and nearby chair",
+    "table edge and glass contact",
+    "pendant lamp and support"
+  ],
+  "remaining_tells": [
+    "some lens-like background softness"
+  ],
+  "signed": false,
+  "generation_prompt": "Candid handheld phone photo of the referenced man seated at a small table in a neighborhood caf\u00e9, in a fresh waist-up vertical composition. Use the reference only for his appearance and clothing: preserve his identity, existing facial markings, loosely parted dark brown hair, light stubble and off-white graphic T-shirt. Retain ordinary skin texture and a few loose hairs. He is checking his phone, looking down while his thumb scrolls, with a relaxed mouth and one forearm resting naturally on the table. Window light from the left lights the nearer cheek; the opposite cheek and the caf\u00e9 corner are dimmer, with a ceiling lamp contributing some warm light behind him. Neutral white balance. Frame him slightly off-center from a seated friend's viewpoint, with a small handheld tilt. Keep the table edge, nearby chair and window frame coherent and readable with normal phone depth. Slight movement softness in the scrolling thumb. No captions or added graphics.",
+  "skill_generated_at": "2026-10-19",
+  "selected_plain_attempt": 1,
+  "shared_brief": "Use the reference for the man's appearance and clothing. Create a fresh waist-up photo of him seated at a caf\u00e9 table, checking his phone. Vertical image.",
+  "plain_prompt": "Use the reference for the man's appearance and clothing. Create a fresh waist-up photo of him seated at a caf\u00e9 table, checking his phone. Vertical image.",
+  "comparison_design": "Same original reference, same fresh-scene brief, same available image tool, one first attempt per path. Both generated on 2026-10-19."
+}

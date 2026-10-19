@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+# dist/snapshot-realism.zip is committed (README links to it; tests check it matches the source)
+dist/*
+!dist/snapshot-realism.zip
+.DS_Store
+demo-check.jpg

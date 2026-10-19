@@ -1,0 +1,42 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: ${{ matrix.os }} / Python ${{ matrix.python }}${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ["3.13"]
+        install: ["numpy pillow"]
+        include:
+          # Oldest supported versions, the floors in requirements.txt.
+          # actions/python-versions provides 3.9.25 for ubuntu-24.04.
+          - os: ubuntu-24.04
+            python: "3.9"
+            install: "--only-binary :all: numpy==1.19.3 pillow==8.0.0"
+          # Optional C2PA signing (--sign); its tests are skipped everywhere else.
+          - os: ubuntu-latest
+            python: "3.13"
+            install: "numpy pillow c2pa-python"
+            label: " + c2pa-python"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install dependencies
+        run: python -m pip install ${{ matrix.install }}
+      - name: Unit tests
+        run: python -m unittest discover -s tests
+      - name: Zip matches the source
+        run: python tools/build_zip.py --check

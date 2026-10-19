@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" role="img" aria-labelledby="title desc">
+  <title id="title">Snapshot Realism</title>
+  <desc id="desc">A restrained dark banner with a phone-frame outline and camera metadata marks.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#151d21"/>
+      <stop offset="1" stop-color="#273035"/>
+    </linearGradient>
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency=".55" numOctaves="2" seed="12" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer><feFuncA type="linear" slope=".07"/></feComponentTransfer>
+    </filter>
+  </defs>
+  <rect width="1200" height="340" fill="url(#bg)"/>
+  <rect width="1200" height="340" filter="url(#grain)" opacity=".55"/>
+  <path d="M44 44h25M44 44v25M1131 44h25M1156 44v25M44 271v25M44 296h25M1156 271v25M1131 296h25" fill="none" stroke="#8a9698" stroke-width="2" opacity=".6"/>
+  <rect x="756" y="51" width="338" height="238" rx="8" fill="#11191d" stroke="#788789" stroke-width="2" opacity=".85"/>
+  <rect x="773" y="68" width="304" height="204" rx="2" fill="#354247"/>
+  <path d="M773 214c57-37 100-66 161-58 50 6 98 42 143 5v111H773z" fill="#263137"/>
+  <circle cx="925" cy="152" r="48" fill="#77827d" opacity=".48"/>
+  <path d="M773 212c83-11 130-22 304-5" stroke="#8d9993" stroke-width="2" opacity=".3" fill="none"/>
+  <rect x="773" y="68" width="304" height="204" filter="url(#grain)" opacity=".85"/>
+  <text x="76" y="86" fill="#91a9a7" font-family="Segoe UI, Arial, sans-serif" font-size="17" letter-spacing="5">AGENT SKILL / IMAGE FINISHING</text>
+  <text x="74" y="174" fill="#f1f0e9" font-family="Segoe UI, Arial, sans-serif" font-size="56" font-weight="600" letter-spacing="1">SNAPSHOT</text>
+  <text x="74" y="233" fill="#f1f0e9" font-family="Segoe UI, Arial, sans-serif" font-size="56" font-weight="600" letter-spacing="1">REALISM</text>
+  <text x="77" y="274" fill="#b4c1bf" font-family="Segoe UI, Arial, sans-serif" font-size="17" letter-spacing="2">ORDINARY CAPTURE. HONEST ORIGIN.</text>
+  <text x="796" y="255" fill="#d6dfdb" font-family="Consolas, monospace" font-size="12" letter-spacing="2">CAMERA / EDITED / GENERATED</text>
+</svg>
