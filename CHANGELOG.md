@@ -2,7 +2,13 @@
 
 ## Unreleased
 
-Tests, CI and release tooling only. The skill and its ZIP are unchanged.
+Tests, CI, release tooling and docs only. The skill and its ZIP are unchanged.
+
+### Docs
+
+- The two Muskoka Wharf AI edits (`plaza-after.jpg`, `sculpture-after.jpg`) carry the AI-generated label in their metadata again. The supplied copies had lost it in transfer; it was re-added with `realism.py --origin generated --capture-strength 0 --wb-strength 0`, which applies no capture effects.
+- The Wharf edit captions say how the edits were made: Codex's image model removed the streaks and regenerated each scene, `realism.py` finished it and Codex exported Ultra HDR. The skill has no flare-removal step of its own.
+- Limits: the generation and editing stage can fix faces, hands, text and objects when asked but can also redraw signs, text and fixtures, so check the result at 100%.
 
 ### Tests and CI
 
