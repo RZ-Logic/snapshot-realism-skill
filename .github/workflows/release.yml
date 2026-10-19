@@ -1,0 +1,45 @@
+name: release
+
+# Publishes the version in realism.py as a GitHub release: the tag vX.Y.Z on the
+# commit it runs on, the CHANGELOG.md section for that version as the notes and
+# the skill ZIP as the download. Bump the version first, then run it from the
+# Actions tab (release, Run workflow) on main. It refuses a version that is
+# already tagged, and publishes nothing unless the tests and the ZIP check pass.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - name: Install dependencies
+        run: python -m pip install numpy pillow
+      - name: Unit tests
+        run: python -m unittest discover -s tests
+      - name: Zip matches the source
+        run: python tools/build_zip.py --check
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="$(python tools/release_notes.py --version)"
+          if git ls-remote --exit-code --tags origin "refs/tags/v$version" > /dev/null; then
+            echo "::error::v$version is already tagged. Bump the version (realism.py, SKILL.md, README.md badge, CHANGELOG.md) and run again."
+            exit 1
+          fi
+          python tools/release_notes.py > "$RUNNER_TEMP/notes.md"
+          gh release create "v$version" dist/snapshot-realism.zip --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "snapshot-realism $version" --notes-file "$RUNNER_TEMP/notes.md"

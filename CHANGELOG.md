@@ -2,12 +2,17 @@
 
 ## Unreleased
 
-Tests and CI only. The skill and its ZIP are unchanged.
+Tests, CI and release tooling only. The skill and its ZIP are unchanged.
 
 ### Tests and CI
 
 - The test that an output named as a case variant of the input (`photo.jpg` for `Photo.JPG`) is refused never ran on macOS. It was gated on `os.path.normcase`, which folds case only on Windows, while macOS's default APFS volume is also case-insensitive. The test now probes its own temp folder and skips only where `photo.jpg` does not find `Photo.JPG`.
 - The workflow moves to `actions/checkout@v7` and `actions/setup-python@v7`, which run on Node 24. The v4 and v5 it used targeted Node 20, which GitHub has deprecated; every job ran them forced onto Node 24 with a warning.
+
+### Releases
+
+- New `release.yml` workflow, run by hand from the Actions tab on main. It runs the tests and the ZIP check, then publishes the version in `realism.py` as a GitHub release: tag `vX.Y.Z` on that commit, the version's CHANGELOG section as the notes and `snapshot-realism.zip` attached. It refuses a version that is already tagged. `tools/release_notes.py` extracts the notes; three tests cover it (a mutation pass killed 3 of 3 mutants) and check that the workflow uses only actions the test workflow runs.
+- The README install steps link to the ZIP of the latest release.
 
 ## 0.6.1 (2026-10-19)
 

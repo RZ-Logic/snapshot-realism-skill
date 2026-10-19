@@ -230,6 +230,38 @@ class Consistency(unittest.TestCase):
                 self.assertEqual(found, version, "/".join(parts))
 
 
+class Release(unittest.TestCase):
+    """The release workflow takes its tag from realism.py and its notes from CHANGELOG.md."""
+
+    @classmethod
+    def setUpClass(cls):
+        spec = importlib.util.spec_from_file_location("release_notes", os.path.join(ROOT, "tools", "release_notes.py"))
+        cls.tool = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(cls.tool)
+
+    def test_this_version_has_release_notes(self):
+        version = self.tool.version()
+        body = self.tool.notes(read_text("CHANGELOG.md"), version)
+        self.assertTrue(body, "no notes under '## %s' in CHANGELOG.md" % version)
+        self.assertNotRegex(body, r"(?m)^## ", "the notes run into the next version")
+
+    def test_notes_take_one_section_of_exactly_that_version(self):
+        text = ("# Changelog\n\n## Unreleased\n\nsoon\n\n## 1.2.10 (2026-02-01)\n\nten\n\n"
+                "## 1.2.1 (2026-01-01)\n\none\n\n### Fixes\n\n- a fix\n\n## 1.2.0\n\nzero\n\n## 1.1.0\n")
+        self.assertEqual(self.tool.notes(text, "1.2.1"), "one\n\n### Fixes\n\n- a fix")
+        self.assertEqual(self.tool.notes(text, "1.2.10"), "ten")
+        self.assertEqual(self.tool.notes(text, "1.2.0"), "zero")
+        self.assertIsNone(self.tool.notes(text, "1.1.0"))  # heading with nothing under it
+        self.assertIsNone(self.tool.notes(text, "1.2"))
+        self.assertIsNone(self.tool.notes(text, "9.9.9"))
+
+    def test_release_workflow_uses_the_tested_actions(self):
+        def uses(name):
+            return set(re.findall(r"uses:\s*(\S+)", read_text(".github", "workflows", name)))
+        self.assertTrue(uses("release.yml"))
+        self.assertLessEqual(uses("release.yml"), uses("tests.yml"), "release.yml uses an action tests.yml does not")
+
+
 class TextFiles(unittest.TestCase):
     def test_no_em_dashes(self):
         hits = []
