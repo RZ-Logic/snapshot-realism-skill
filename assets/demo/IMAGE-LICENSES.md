@@ -7,13 +7,13 @@ in these examples.
 
 ## Muskoka Wharf
 
-Photographs supplied by the project maintainer for these documentation examples.
+Photographs taken by the project maintainer at Muskoka Wharf.
 Copyright remains with the photographer. Inclusion here does not grant a separate
 photo reuse license. The files fall into three groups:
 
-- the originals, copied as supplied;
-- the processed versions the maintainer supplied, labelled "AI-edited (as supplied)"
-  because they changed scene content; their editing history is not recorded;
+- the original photographs;
+- the AI-assisted photo edits created in Codex using Snapshot Realism, labelled
+  "Snapshot Realism / AI-assisted edit" in the comparison sheets;
 - the script outputs and 100% crop sheets made by running `realism.py` on the
   originals with `--origin camera --preset night --seed 42`. They are derivatives
   of the originals and carry the same photo rights; only the code that made them

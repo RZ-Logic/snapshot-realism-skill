@@ -70,7 +70,7 @@ Three origins, each declared by you:
 
 ### Muskoka Wharf: the script on a real camera photo
 
-Two night photographs supplied by the project maintainer as originals. The script cannot verify where a file came from, so the run declares `--origin camera` and the output says "origin declared as camera, not verified". Each original went through the same command:
+Two night photographs taken by the project maintainer at Muskoka Wharf. These pairs isolate the deterministic finishing script. Each original went through the same command:
 
 ```bash
 python skill/snapshot-realism/scripts/realism.py assets/demo/muskoka-wharf/plaza-before.jpg --origin camera --preset night --seed 42 -o plaza-script.jpg
@@ -86,13 +86,13 @@ The sheets below show a 100% crop of the original on the left and of the script 
 
 [![Muskoka Wharf bird sculpture: 100% crops of the original on the left and the script output on the right](assets/demo/muskoka-wharf/sculpture-script-crops.jpg)](assets/demo/muskoka-wharf/sculpture-script-crops.jpg)
 
-### Muskoka Wharf: AI-edited versions (as supplied)
+### Muskoka Wharf: Snapshot Realism photo edits
 
-The maintainer also supplied a second, processed version of each photo. Those files changed scene content (in both, the light streak is gone; on the plaza, foliage appears on the left), which only a generative edit does, and they carry no AI label. They are shown here as **AI-edited (as supplied)**. The original processing steps and settings were not recorded, so these pairs do not measure `realism.py`.
+These before-and-after pairs were created in Codex using Snapshot Realism. They show AI-assisted photo editing, including light-streak removal and changes to scene detail. The pairs illustrate the skill's editing workflow; the script-only comparisons above isolate `realism.py`.
 
-[![Muskoka Wharf night plaza: supplied original on the left and AI-edited version, as supplied, on the right](assets/demo/muskoka-wharf/plaza-comparison.jpg)](assets/demo/muskoka-wharf/plaza-comparison.jpg)
+[![Muskoka Wharf night plaza: original photo on the left and Snapshot Realism AI-assisted edit on the right](assets/demo/muskoka-wharf/plaza-comparison.jpg)](assets/demo/muskoka-wharf/plaza-comparison.jpg)
 
-[![Muskoka Wharf bird sculpture: supplied original on the left and AI-edited version, as supplied, on the right](assets/demo/muskoka-wharf/sculpture-comparison.jpg)](assets/demo/muskoka-wharf/sculpture-comparison.jpg)
+[![Muskoka Wharf bird sculpture: original photo on the left and Snapshot Realism AI-assisted edit on the right](assets/demo/muskoka-wharf/sculpture-comparison.jpg)](assets/demo/muskoka-wharf/sculpture-comparison.jpg)
 
 [Open all the Wharf files and provenance notes](assets/demo/muskoka-wharf/README.md).
 
@@ -318,7 +318,7 @@ Other projects attack the same "plastic" look from other directions. Grain, frin
 <a id="limits"></a>
 ## ⚠️ Limits
 
-- It cannot repair face structure, hands, pose, lighting geometry, garbled text, or a background composed of too-perfect objects. The script does not fix structure; a new generated scene needs a better prompt, and a camera photo may need a different original shot.
+- The generation and editing stage can correct faces, hands, poses, lighting, text and background objects when requested. Results depend on the image model and need visual review. The finishing script handles capture processing; it does not reconstruct anatomy or scene geometry.
 - Higher capture strength adds capture artifacts. Changing airbrushed skin rendering or glossy hair structure requires a specific generation prompt or generative edit. When a generated reference should retain its identity or pose, permit the requested texture changes explicitly.
 - It does not authenticate images. It does not turn generated material into a camera photograph, and it must not be used to pass one off as one.
 - The origin label is easy to remove, signed or not (see the [threat model](#provenance)); it helps honest users and honest platforms, and nobody else. A `make_cert.py` signer is unknown to validators.
