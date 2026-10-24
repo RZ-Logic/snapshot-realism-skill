@@ -1,13 +1,27 @@
 # Changelog
 
-## Unreleased
+## 0.6.2 (2026-10-24)
 
-Tests, CI, release tooling and docs only. The skill and its ZIP are unchanged.
+From the maintainer's 22-case review (20 generated scenes against plain generations, plus 2 of his own phone photos): no script defect in any case except too much grain at strength 1 at night, strength 0.5 picked as best in 10 of 17 generated cases, and the script making his own photos worse or no different.
+
+### Script
+
+- `--capture-strength` defaults to 0.5 for `generated` and `edited` (was 1). Strength 1 and above are unchanged.
+- Camera photos get no capture effects by default (`--origin camera` defaults to strength 0, with a note): a real photo already has real phone texture. `--capture-strength` still adds them on request.
+
+### Skill instructions
+
+- The camera-photo path is now "fix camera imperfections": ask which imperfection to fix and leave a photo with nothing to fix alone; make a conservative AI edit for flare, streaks, ghosting, haze or dust (the script cannot remove fringing, noise or blur); check signs and text at 100%; then label the result without changing its color, size or texture (`--capture-strength 0 --wb-strength 0 --max-edge 8192 --quality 95`), as `generated` when the image model returned a whole new frame, as Codex and ChatGPT do, and `edited` only for a masked inpaint. Without an image tool, the agent gives the user the edit prompt.
+- Prompt recipe: generators polish women hardest, so unless the request sets them, the subject slot pushes everyday makeup or none, hair as it sits at that time of day, a mid-thought expression and ordinary clothes; the recipe's example follows it. House plants are not mentioned unless asked (a negated "no plants" pulls them in) and count toward the showroom tell only when they look staged.
+- Hand-back offers a rerun stronger (1) or at 0, from the new 0.5 default; the recipe's strength scale matches.
+- The skill description, the Codex default prompt, the `--origin` help and the Windows launcher no longer describe camera photos as processed directly.
 
 ### Docs
 
+- The Muskoka Wharf script example pins `--capture-strength 1`, the setting its outputs were made with, and says camera photos get no capture effects by default.
+- Quickstart: the camera example is the fix-imperfections flow, and the default output names refer to the generated example.
 - The two Muskoka Wharf AI edits (`plaza-after.jpg`, `sculpture-after.jpg`) carry the AI-generated label in their metadata again. The supplied copies had lost it in transfer; it was re-added with `realism.py --origin generated --capture-strength 0 --wb-strength 0`, which applies no capture effects.
-- The Wharf edit captions say how the edits were made: Codex's image model removed the streaks and regenerated each scene, `realism.py` finished it and Codex exported Ultra HDR. The skill has no flare-removal step of its own.
+- The Wharf edit captions say how the edits were made: Codex's image model removed the streaks and regenerated each scene, `realism.py` finished it and Codex exported Ultra HDR. The script has no flare-removal step.
 - Limits: the generation and editing stage can fix faces, hands, text and objects when asked but can also redraw signs, text and fixtures, so check the result at 100%.
 
 ### Tests and CI

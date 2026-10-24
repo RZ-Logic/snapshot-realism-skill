@@ -1073,9 +1073,37 @@ class Cli(unittest.TestCase):
         code, out, _ = run([src, "--origin", "generated", "--preset", "day", "--warmth", "-0.1"])
         self.assertEqual(code, 0)
         self.assertIn("warmth -0.10 applied", out)
-        self.assertIn("capture strength: 1", out)
+        self.assertIn("capture strength: 0.5", out)
         prefixes = ("note: ", "warning: ", "white balance: ", "capture strength: ", "wrote ")
         self.assertTrue(all(line.startswith(prefixes) for line in out.splitlines()))
+
+    def test_default_capture_strength_depends_on_origin(self):
+        # 0.5 for generated and edited images; 0 for camera photos, which already have real
+        # capture texture, so the script adds none unless asked
+        src = self.save("in.png")
+        for origin, expected in (("generated", "0.5"), ("edited", "0.5"), ("camera", "0")):
+            with self.subTest(origin=origin):
+                code, out, _ = run([src, "--origin", origin, "--preset", "day", "--seed", "1",
+                                    "-o", self.path("%s.jpg" % origin)])
+                self.assertEqual(code, 0)
+                self.assertIn("capture strength: %s\n" % expected, out)
+                self.assertEqual("no capture effects by default" in out, origin == "camera")
+
+    def test_camera_default_adds_no_capture_effects_but_explicit_strength_does(self):
+        src = self.save("in.png")
+        plain = self.path("plain.jpg")
+        self.assertEqual(run([src, "--origin", "camera", "--preset", "night", "--seed", "1", "-o", plain])[0], 0)
+        grain = self.path("grain.jpg")
+        code, out, _ = run([src, "--origin", "camera", "--preset", "night", "--seed", "1",
+                            "--capture-strength", "0.5", "-o", grain])
+        self.assertEqual(code, 0)
+        self.assertNotIn("no capture effects by default", out)
+        with Image.open(src) as a, Image.open(plain) as b, Image.open(grain) as c:
+            ref = np.asarray(a.convert("RGB"), np.float32)
+            off = np.abs(np.asarray(b.convert("RGB"), np.float32) - ref).mean()
+            on = np.abs(np.asarray(c.convert("RGB"), np.float32) - ref).mean()
+        self.assertLess(off, 1.5)  # only the JPEG re-save
+        self.assertGreater(on, off + 0.5)
 
     def test_non_ascii_name_with_a_cp1252_console(self):
         src = self.save("写真.png")

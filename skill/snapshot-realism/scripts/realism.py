@@ -65,7 +65,7 @@ try:  # HEIC/HEIF (the iPhone default) when pillow-heif is installed
 except ImportError:
     pass
 
-__version__ = "0.6.1"
+__version__ = "0.6.2"
 
 # shot/read: noise variance = shot * signal + read (linear light).
 # chroma: chroma noise relative to luma grain. smear: luma noise-reduction
@@ -1559,7 +1559,7 @@ def _run(argv, written):
     ap = argparse.ArgumentParser(description="Apply a phone-snapshot look to an image.")
     ap.add_argument("input")
     ap.add_argument("--origin", choices=tuple(ORIGINS), required=True,
-                    help="provenance written to the output: camera (a genuine photo, processed directly), "
+                    help="provenance written to the output: camera (a genuine photo; no capture effects by default), "
                          "edited (a camera photo with AI-generated parts, e.g. inpainting), "
                          "generated (made by an image model, including scenes built from a reference photo)")
     ap.add_argument("--preset", choices=("day", "indoor", "night"), required=True,
@@ -1576,8 +1576,9 @@ def _run(argv, written):
                     help="manual shift after auto white balance, -1 to 1: negative cools, positive warms (try -0.1)")
     ap.add_argument("--ca", type=bounded(float, 0.0, 0.01), default=0.001,
                     help="lateral chromatic aberration, 0 to 0.01 (default 0.001; 0 disables)")
-    ap.add_argument("--capture-strength", type=bounded(float, 0.0, 3.0), default=1.0,
-                    help="strength of simulated capture artifacts, 0 to 3 (default 1; 0 disables them); "
+    ap.add_argument("--capture-strength", type=bounded(float, 0.0, 3.0),
+                    help="strength of simulated capture artifacts, 0 to 3 (default 0.5 for edited and generated, "
+                         "0 for camera photos, which already have real capture texture; 0 disables them); "
                          "white balance and JPEG quality are controlled separately")
     ap.add_argument("--max-edge", type=bounded(int, 16, 8192), default=1600,
                     help="downscale so the long edge fits, 16 to 8192 (default 1600; never upscales)")
@@ -1658,11 +1659,16 @@ def _run(argv, written):
     strength = args.wb_strength
     if strength is None:
         strength = 0.0 if args.origin == "camera" else 0.8
+    capture = args.capture_strength
+    if capture is None:  # a real photo already has real capture texture; adding more only hurts it
+        capture = 0.0 if args.origin == "camera" else 0.5
+        if args.origin == "camera":
+            notes.append("camera photos get no capture effects by default; --capture-strength 0.5 adds them")
 
     writing = False
     try:
         out, info = process(src, args.preset, strength, args.warmth, args.ca, args.max_edge, args.seed,
-                            capture_strength=args.capture_strength, keep_before=bool(args.compare))
+                            capture_strength=capture, keep_before=bool(args.compare))
         quality = info["quality"] if args.quality is None else args.quality
         data = encode_jpeg(out, quality, args.origin, dates)
         if signer is not None:

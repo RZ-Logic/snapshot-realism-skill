@@ -32,8 +32,8 @@ SEED = 5
 STRENGTHS = (0.5, 1, 2, 3)
 REC601 = np.array([0.299, 0.587, 0.114])
 PHOTOS = (  # (file, origin, preset, extra options): the settings the demo READMEs use
-    ("muskoka-wharf/plaza-before.jpg", "camera", "night", []),
-    ("muskoka-wharf/sculpture-before.jpg", "camera", "night", []),
+    ("muskoka-wharf/plaza-before.jpg", "camera", "night", ["--capture-strength", "1"]),
+    ("muskoka-wharf/sculpture-before.jpg", "camera", "night", ["--capture-strength", "1"]),
     ("candid-male/skill-before-script.png", "generated", "indoor", ["--capture-strength", "1", "--wb-strength", "0.8"]),
 )
 FEED_WIDTH = 1080

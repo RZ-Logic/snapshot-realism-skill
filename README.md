@@ -13,7 +13,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="MIT license"/></a>
   <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.9 or newer"/>
   <img src="https://img.shields.io/badge/Origin-Camera_%C2%B7_Edited_%C2%B7_Generated-2A9D4A?style=for-the-badge" alt="Origin is declared as camera, edited or generated"/>
-  <img src="https://img.shields.io/badge/Version-0.6.1-555?style=for-the-badge" alt="Version 0.6.1"/>
+  <img src="https://img.shields.io/badge/Version-0.6.2-555?style=for-the-badge" alt="Version 0.6.2"/>
   <a href="https://github.com/RZ-Logic/snapshot-realism-skill/actions/workflows/tests.yml"><img src="https://img.shields.io/github/actions/workflow/status/RZ-Logic/snapshot-realism-skill/tests.yml?branch=main&label=Tests&style=for-the-badge" alt="Tests workflow status"/></a>
 </p>
 
@@ -40,7 +40,7 @@
 
 An image can have convincing objects and still feel manufactured: uniformly clean shadows, warm skin and walls, crisp hair and fabric, and a background with no camera noise. Asking an image model to "make it more real" often rebuilds the same scene with a grain filter on top. A grain filter does not change a staged pose, impossible lighting, or a too-perfect background.
 
-Snapshot Realism separates those jobs. For **newly generated scenes**, the skill rewrites the request in capture terms and checks the result before a deterministic finishing pass. For **genuine camera photos**, it works on the existing pixels without regenerating the scene.
+Snapshot Realism separates those jobs. For **newly generated scenes**, the skill rewrites the request in capture terms and checks the result before a deterministic finishing pass. For **genuine camera photos**, it adds no capture texture by default and fixes only the imperfections you name, such as flare or haze, with a conservative AI edit.
 
 **Scope.** The skill is for fictional people, your own likeness, or people who gave permission. When a real person is supplied as a reference, it asks you to confirm that it is you or someone who consented before it edits. Any edit of a real person's likeness is declared `generated` (or `edited`, for an inpaint on their camera photo), never `camera`. Never use it to hide that an image is AI-generated or to pass a generated image off as a camera photo.
 
@@ -52,16 +52,16 @@ Snapshot Realism separates those jobs. For **newly generated scenes**, the skill
 The prompt recipe addresses pose, light, framing, and other structural tells. `realism.py` addresses color and capture artifacts: white balance, imperfect optics, noise reduction, shadow noise, sharpening, and JPEG output. Neither step proves that an image came from a camera.
 
 ```text
-Camera photo ───────────────────────────────┐
-Camera photo with AI inpainting ────────────┤
-                                            ├─► realism.py ─► processed JPEG + comparison
-New scene ─► prompt ─► generate ─► QA ──────┘       │
-                                       --origin camera | edited | generated
+Camera photo ─► fix named imperfections (optional AI edit) ──┐
+Camera photo with AI inpainting ─────────────────────────────┤
+                                                             ├─► realism.py ─► processed JPEG + comparison
+New scene ─► prompt ─► generate ─► QA ───────────────────────┘       │
+                                                        --origin camera | edited | generated
 ```
 
 Three origins, each declared by you:
 
-- **`camera`**: a genuine photo, processed directly.
+- **`camera`**: a genuine photo. The script adds no capture effects to it by default, because a real photo already has real phone texture.
 - **`edited`**: a camera photo with AI-generated parts, such as inpainting.
 - **`generated`**: made by an image model, including a scene regenerated from a reference photo.
 
@@ -70,10 +70,10 @@ Three origins, each declared by you:
 
 ### Muskoka Wharf: the script on a real camera photo
 
-Two night photographs taken by the project maintainer at Muskoka Wharf. These pairs isolate the deterministic finishing script. Each original went through the same command:
+Two night photographs taken by the project maintainer at Muskoka Wharf. These pairs isolate the deterministic finishing script, run at capture strength 1 to show what it does. Since 0.6.2 the script adds nothing to a camera photo by default; for your own photos, fix camera imperfections instead (see [Quickstart](#quickstart)). Each original went through the same command:
 
 ```bash
-python skill/snapshot-realism/scripts/realism.py assets/demo/muskoka-wharf/plaza-before.jpg --origin camera --preset night --seed 42 -o plaza-script.jpg
+python skill/snapshot-realism/scripts/realism.py assets/demo/muskoka-wharf/plaza-before.jpg --origin camera --preset night --capture-strength 1 --seed 42 -o plaza-script.jpg
 ```
 
 The sheets below show a 100% crop of the original on the left and of the script output on the right. The full outputs are [`plaza-script.jpg`](assets/demo/muskoka-wharf/plaza-script.jpg) and [`sculpture-script.jpg`](assets/demo/muskoka-wharf/sculpture-script.jpg).
@@ -88,7 +88,7 @@ The sheets below show a 100% crop of the original on the left and of the script 
 
 ### Muskoka Wharf: Snapshot Realism photo edits
 
-These before-and-after pairs were created in Codex using Snapshot Realism. They show AI-assisted photo editing, including light-streak removal and changes to scene detail. Codex's image model removed the streaks and regenerated each scene from Codex's own restoration-edit prompt; `realism.py` then finished the result, and Codex exported it as Ultra HDR. The skill has no flare-removal step of its own. The edited files carry the AI-generated label in their metadata. The script-only comparisons above isolate `realism.py`.
+These before-and-after pairs were created in Codex using Snapshot Realism. They show AI-assisted photo editing, including light-streak removal and changes to scene detail. Codex's image model removed the streaks and regenerated each scene from Codex's own restoration-edit prompt; `realism.py` then finished the result, and Codex exported it as Ultra HDR. The script has no flare-removal step; since 0.6.2 the skill's camera path asks the image model for it. The edited files carry the AI-generated label in their metadata. The script-only comparisons above isolate `realism.py`.
 
 [![Muskoka Wharf night plaza: original photo on the left and Snapshot Realism AI-assisted edit on the right](assets/demo/muskoka-wharf/plaza-comparison.jpg)](assets/demo/muskoka-wharf/plaza-comparison.jpg)
 
@@ -116,7 +116,7 @@ Pose, expression and background differences come from generation; the script add
 The tables below are generated by `python tools/measure.py --readme`. The first runs the script on synthetic flat patches and step edges and reports the texture properties the tests pin, so a regression in the grain, the sharpening or the black level shows up as a number. The second runs it on the demo photos.
 
 <!-- measure:start -->
-Measured with `realism.py 0.6.1` by `python tools/measure.py` (numpy 2.5.4, Pillow 12.3.0).
+Measured with `realism.py 0.6.2` by `python tools/measure.py` (numpy 2.5.4, Pillow 12.3.0).
 
 | Preset | Strength | Luma std at 118 (DN) | Lag-2 autocorrelation at 60 | Std at 60, sharpened / not (DN) | Mean shift at 0 / 20 / 128 (DN) | Edge overshoot (DN) | CA k | Sharpen |
 |---|---|---|---|---|---|---|---|---|
@@ -187,10 +187,10 @@ That creates `portrait-check.jpg` and `portrait-check_compare.jpg` (before and a
 
 `--origin` and `--preset` are required on every run; there is no default for either. Choose the preset from the *actual light level* of the scene, then inspect the output at normal size and at 100%.
 
-For a **genuine camera photo**, work on a copy of the original:
+For a **genuine camera photo**, the script adds no capture effects by default: a real photo already has real phone texture. To fix a camera imperfection such as flare, light streaks, ghosting, haze or dust, first make a conservative AI edit ("Remove the flare. Change nothing else: keep every lamp, sign, word of text, sculpture and building exactly as it is."), compare signs and text with the original at 100%, then label the result without changing its color, size or texture. Use `--origin generated` when the image model returned a whole new frame, as Codex and ChatGPT do, and `edited` only for a masked inpaint that kept the other pixels:
 
 ```bash
-python skill/snapshot-realism/scripts/realism.py photo.jpg --origin camera --preset indoor --compare
+python skill/snapshot-realism/scripts/realism.py photo-fixed.png --origin generated --preset night --capture-strength 0 --wb-strength 0 --max-edge 8192 --quality 95
 ```
 
 For a **camera photo with AI-generated parts** (inpainting):
@@ -205,7 +205,7 @@ For a **newly generated image**, including a scene regenerated from a reference 
 python skill/snapshot-realism/scripts/realism.py scene.png --origin generated --preset night --compare
 ```
 
-Without `-o`, the first command writes `photo_real.jpg` and `photo_real_compare.jpg` next to the input and prints the path it wrote. If `photo_real.jpg` (or its comparison) already exists, the next run writes `photo_real-2.jpg`, then `photo_real-3.jpg`. The input file is never overwritten, even with `--overwrite`.
+Without `-o`, the last command writes `scene_real.jpg` and `scene_real_compare.jpg` next to the input and prints the path it wrote. If `scene_real.jpg` (or its comparison) already exists, the next run writes `scene_real-2.jpg`, then `scene_real-3.jpg`. The input file is never overwritten, even with `--overwrite`.
 
 To also **sign** the output with C2PA Content Credentials that keep the input's own (optional; Python 3.10+), install c2pa-python, make a private certificate once, then add `--sign`:
 
@@ -217,7 +217,7 @@ python skill/snapshot-realism/scripts/realism.py scene.png --origin generated --
 
 See [Signed Content Credentials](#signing) for what the manifest holds and how validators show a private signer.
 
-**Capture strength is independent of light level.** Use `--capture-strength 0.5` for a light finish, `1` for normal (the default), `2` for strong, or `3` for the maximum. Keep the preset matched to the scene; do not choose `night` just to increase the effect. For example, a stronger daylight finish is:
+**Capture strength is independent of light level.** The default is `0.5` for generated and edited images and `0` for camera photos; use `1` for a stronger finish, `2` for strong, or `3` for the maximum. Keep the preset matched to the scene; do not choose `night` just to increase the effect. For example, a stronger daylight finish is:
 
 ```bash
 python skill/snapshot-realism/scripts/realism.py scene.png --origin generated --preset day --capture-strength 2 --compare
@@ -242,14 +242,14 @@ For a newly generated scene, the skill checks the image before running the scrip
 
 1. **Rewrite the request** with the recipe: capture, subject, moment, light, framing, artifacts. Pure polish words (8k, masterpiece, photorealistic) are dropped. Words that can carry a real requirement (soft light, bokeh, golden hour, beautiful) are translated by intent instead of deleted, and the agent tells you what it dropped and translated. Night prompts describe what a phone night shot looks like rather than pairing "iPhone" with "high ISO, grainy", and the artifacts slot asks for one or two imperfections, because a full checklist of flaws becomes its own uniform tell. Generated rooms drift toward a showroom, so the setting is named specifically and as it is used ("a rented one-bedroom living room", not "a modern living room"), the named light falls off across the room instead of lighting every wall evenly, and the frame gets tighter when a wide room would show more staged background than the request needs. Style words such as modern, minimalist, luxury, aesthetic and cozy are translated into a specific real place. Clutter, stains and wear are not added by default: a new sofa or a hotel room can be pristine, and the recipe's examples are patterns, not phrases to reuse.
 2. **Gate A, blocking.** Any one of these means regenerate (or crop it out, if cropping leaves a usable image): broken anatomy (extra, fused or missing fingers or limbs, warped face, impossible joints); readable text that is garbled or reversed (signs, shirt prints, labels); identity drift from a supplied reference; physically impossible light or reflections, or clearly impossible object construction or support (a floating shelf, fused furniture legs); the image does not show what was asked.
-3. **Gate B, stylistic tells, counted.** Centered pose with eye contact and a closed-mouth smirk; a symmetric, poreless or airbrushed face; glossy hair clumps with no flyaways; even flattering light on a night scene; creamy uniform background blur; a showroom background in a place meant to look lived in (objects lined up or evenly spaced, identical repeats, uniformly plump upholstery), with all of its signs counted as one tell. Two or more, or one background tell you asked to fix, means regenerate with a new prompt that pushes harder on the failed slot. The agent checks the two or three most prominent background objects, judges visible defects rather than tidiness, and says which objects it checked.
+3. **Gate B, stylistic tells, counted.** Centered pose with eye contact and a closed-mouth smirk; a symmetric, poreless or airbrushed face; glossy hair clumps with no flyaways; even flattering light on a night scene; creamy uniform background blur; a showroom background in a place meant to look lived in (objects lined up or evenly spaced, identical repeats, uniformly plump upholstery, staged house plants), with all of its signs counted as one tell. Two or more, or one background tell you asked to fix, means regenerate with a new prompt that pushes harder on the failed slot. The agent checks the two or three most prominent background objects, judges visible defects rather than tidiness, and says which objects it checked.
 4. **Cap.** After 3 regenerations, a remaining Gate A defect means the image is handed back as a "failed draft" that names the defects; the script is not run on it and it is not presented as finished unless you ask. If only Gate B tells remain, the best attempt is handed back with the tells named.
-5. **Run `realism.py`** with `--origin generated` (or `edited`) and compare before and after at fit size and at 100%. Adjust `--capture-strength` for a lighter or stronger finish while keeping the preset matched to the light. If grain, smear or sharpening looks artificial, lower the strength or keep the unprocessed image. Do not expect noise to hide structural tells. When it hands the result back, the agent offers to rerun the script a step lighter (0.5) if the grain looks too strong or stronger (2) if it looks too clean.
+5. **Run `realism.py`** with `--origin generated` (or `edited`) and compare before and after at fit size and at 100%. Adjust `--capture-strength` for a lighter or stronger finish while keeping the preset matched to the light. If grain, smear or sharpening looks artificial, lower the strength or keep the unprocessed image. Do not expect noise to hide structural tells. When it hands the result back, the agent offers a rerun stronger (1) if it looks too clean, or at 0 if the grain looks wrong.
 
 <a id="provenance"></a>
 ## 🔎 Provenance and metadata
 
-Every output gets EXIF `Software` set to `snapshot-realism 0.6.1` and an EXIF `ImageDescription`; color outputs also embed an sRGB profile (grayscale outputs stay grayscale without one). The `edited` and `generated` outputs also get an IPTC XMP `DigitalSourceType`, written at byte level so it does not depend on the Pillow version.
+Every output gets EXIF `Software` set to `snapshot-realism 0.6.2` and an EXIF `ImageDescription`; color outputs also embed an sRGB profile (grayscale outputs stay grayscale without one). The `edited` and `generated` outputs also get an IPTC XMP `DigitalSourceType`, written at byte level so it does not depend on the Pillow version.
 
 - **EXIF** is the metadata block that cameras and editors write into a JPEG.
 - **XMP** is Adobe's XML metadata packet embedded in image files.
@@ -258,9 +258,9 @@ Every output gets EXIF `Software` set to `snapshot-realism 0.6.1` and an EXIF `I
 
 | `--origin` | `ImageDescription` | XMP `DigitalSourceType` |
 |---|---|---|
-| `camera` | `Post-processed with snapshot-realism 0.6.1: configurable capture processing; origin declared as camera, not verified` | None |
-| `edited` | `AI-edited image (camera photo with AI-generated content); post-processed with snapshot-realism 0.6.1` | `compositeWithTrainedAlgorithmicMedia` |
-| `generated` | `AI-generated image; post-processed with snapshot-realism 0.6.1` | `trainedAlgorithmicMedia` |
+| `camera` | `Post-processed with snapshot-realism 0.6.2: configurable capture processing; origin declared as camera, not verified` | None |
+| `edited` | `AI-edited image (camera photo with AI-generated content); post-processed with snapshot-realism 0.6.2` | `compositeWithTrainedAlgorithmicMedia` |
+| `generated` | `AI-generated image; post-processed with snapshot-realism 0.6.2` | `trainedAlgorithmicMedia` |
 
 Every output is checked before it is written; if the metadata is wrong, nothing is written. With `--sign`, the output also carries a signed C2PA manifest that states the same origin ([below](#signing)).
 
@@ -355,7 +355,7 @@ Other projects attack the same "plastic" look from other directions. Grain, frin
 |---|---|
 | `--origin camera\|edited\|generated` | Required. The provenance written to the output (see [Provenance](#provenance)). |
 | `--preset day\|indoor\|night` | Required. The scene's actual light level; sets noise, smear, sharpening and JPEG quality. |
-| `--capture-strength 0..3` | Capture roughness, default 1. Try 0.5 light, 1 normal, 2 strong or 3 maximum; 0 bypasses color fringing, noise, noise reduction and sharpening. |
+| `--capture-strength 0..3` | Capture roughness. Default 0.5 for `generated` and `edited`, 0 for `camera`. Try 1 stronger, 2 strong or 3 maximum; 0 bypasses color fringing, noise, noise reduction and sharpening. |
 | `-o PATH`, `--output PATH` | Output `.jpg` or `.jpeg` in an existing folder. Default: the input name without its extension plus `_real.jpg` (`photo.png` gives `photo_real.jpg`), then `_real-2.jpg` and so on. |
 | `--compare` | Also write the output name without its extension plus `_compare.jpg` (`photo_real_compare.jpg`), before and after side by side. |
 | `--overwrite` | Replace an existing `-o` target or output files. Never replaces the input. |

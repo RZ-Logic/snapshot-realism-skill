@@ -21,7 +21,11 @@ Write one paragraph in this order. Each slot pushes away from a specific tell.
    someone who consented (confirm that first); then preserve their identity and describe only
    visible, relevant details. Real skin: visible pores, uneven tone, a blemish or two, under-eye
    shadows. Everyday makeup or none. Hair with flyaways, frizz, a strand stuck to the cheek; never
-   "glossy" or "flowing".
+   "glossy" or "flowing". Generators polish women hardest (smooth symmetric face, styled hair, a
+   soft camera smile), so for a woman push each of these unless the request sets it (an occasion,
+   outfit, makeup or time of day): no makeup or a little worn-off everyday makeup, hair as it sits
+   at that time of day (tied back, flattened or frizzy), an expression caught mid-thought rather
+   than a smile for the camera, and ordinary clothes she would wear that day.
 3. **Moment**: mid-action and not posing. Talking, mid-laugh, glancing off-frame, half-turned,
    holding a drink or phone. Avoid eye contact plus a closed-mouth smirk: that is the default AI
    pose.
@@ -51,6 +55,12 @@ the wall): even light everywhere reads as a listing photo. Do not add clutter, s
 default: a new sofa, a tidy home, a hotel or a showroom can be pristine. Keep the user's subject,
 outfit and locked scene details.
 
+Image models put house plants in almost every room. Do not mention plants unless the request or
+the place calls for them (a garden centre, a plant shop): a negated "no plants" tends to pull them
+in. If corners or sills are in frame, name what that place would really have there. Plants count
+toward the showroom tell only when they look staged (several, evenly placed, a styled corner plant)
+or the user asked to remove them.
+
 After generating, check the two or three most prominent background objects and where the subject
 touches them. Judge visible evidence, not tidiness:
 
@@ -58,8 +68,8 @@ touches them. Judge visible evidence, not tidiness:
   window frames), and contact shadows where objects meet a surface. Clearly impossible construction
   or support, including an object that floats with no contact, is Gate A; occlusion or an unfamiliar
   design is not.
-- **Arrangement:** objects lined up, evenly spaced or squared to the camera in a place the user
-  wants lived in. A tidy room is not a defect.
+- **Arrangement:** objects lined up, evenly spaced or squared to the camera, or house plants
+  placed like a styled set, in a place the user wants lived in. A tidy room is not a defect.
 - **Materials:** creases and cushion compression that match weight and use; no repeated identical
   objects or textures, no uniformly inflated upholstery. Grain cannot add these.
 - **Light and depth:** background light, reflections and softness agree with the scene. Do not hide
@@ -109,8 +119,8 @@ Rewritten prompt:
 
 > Candid phone photo taken by a friend at a crowded outdoor music festival at night, iPhone,
 > handheld. A fictional woman, about 27, long dark brown hair with frizz
-> and flyaways, a few strands stuck to her cheek, visible pores, slightly uneven skin tone, light
-> everyday makeup, small hoop earring. Black leather jacket over a black t-shirt, over-ear DJ
+> and flyaways, a few strands stuck to her cheek, visible pores, slightly uneven skin tone, makeup
+> mostly worn off, small hoop earring. Black leather jacket over a black t-shirt, over-ear DJ
 > headphones around her neck. She is mid-laugh and looking to the right of the camera, not posing.
 > Lit by a harsh white floodlight from the left and a blue-purple stage wash from behind; the right
 > side of her face falls into shadow. Framed off-center to the left, slightly tilted, the top of
@@ -146,7 +156,7 @@ slot that failed.
 | Glossy hair clumps with no flyaways | Subject slot | No |
 | Even, flattering light on a night scene | Light slot | No |
 | Creamy uniform background blur | Drop or translate the blur words (see above), ask for a phone | No |
-| Showroom background in a place the user wants lived in: objects lined up or evenly spaced, identical repeats, uniformly plump upholstery | Scene and background pass: a specific place in use, one or two supported cues, light that falls off, tighter framing | No |
+| Showroom background in a place the user wants lived in: objects lined up or evenly spaced, identical repeats, uniformly plump upholstery, staged house plants | Scene and background pass: a specific place in use, one or two supported cues, light that falls off, tighter framing | No |
 
 The script fixes clean noiseless shadows and over-crisp lossless-looking detail, so they do not
 count toward Gate B. A warm yellow-orange cast counts as fixed only when the script's
@@ -168,10 +178,9 @@ Inspect the processed image and the comparison at fit size and at 100%. For 100%
 native-resolution regions (face, hands, any text, a shadow area, a prominent background object)
 from both images and view them side by side. If grain, smear or sharpening looks artificial, lower
 `--capture-strength` or keep the unprocessed image. Keep the preset matched to the scene's actual
-light level. Capture strength is independent: 0.5 light, 1 normal (default), 2 strong, 3 maximum.
-It changes capture artifacts, not face, hair, pose or lighting structure. When handing back, offer to
-rerun the script a step lighter or stronger than the strength used (`0.5` or `2` from the default
-`1`): lighter if the grain looks too strong, stronger if it looks too clean.
+light level. Capture strength is independent: 0.5 light (default), 1 stronger, 2 strong, 3
+maximum. It changes capture artifacts, not face, hair, pose or lighting structure. When handing
+back, offer a rerun stronger (`1`) if it looks too clean, or at `0` if the grain looks wrong.
 
 ## Iterating
 

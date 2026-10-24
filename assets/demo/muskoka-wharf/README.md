@@ -21,12 +21,14 @@ sheets arrange each pair with labels and source credit.
 ## Script output on the originals
 
 The originals went through the script with `--origin camera --preset night
---seed 42`. Camera origin is declared by the user; the script does not verify it.
-Run from the repository root:
+--capture-strength 1 --seed 42`, to show what the script does. Since 0.6.2 a camera
+photo gets no capture effects unless `--capture-strength` is given, because a real
+photo already has real phone texture. Camera origin is declared by the user; the
+script does not verify it. Run from the repository root:
 
 ```bash
-python skill/snapshot-realism/scripts/realism.py assets/demo/muskoka-wharf/plaza-before.jpg --origin camera --preset night --seed 42 -o plaza-script.jpg
-python skill/snapshot-realism/scripts/realism.py assets/demo/muskoka-wharf/sculpture-before.jpg --origin camera --preset night --seed 42 -o sculpture-script.jpg
+python skill/snapshot-realism/scripts/realism.py assets/demo/muskoka-wharf/plaza-before.jpg --origin camera --preset night --capture-strength 1 --seed 42 -o plaza-script.jpg
+python skill/snapshot-realism/scripts/realism.py assets/demo/muskoka-wharf/sculpture-before.jpg --origin camera --preset night --capture-strength 1 --seed 42 -o sculpture-script.jpg
 ```
 
 The commands write `plaza-script.jpg` and `sculpture-script.jpg` in the current
@@ -55,7 +57,7 @@ in Codex using Snapshot Realism. The edits remove intrusive light streaks and
 change some scene detail, including foliage. Codex's image model removed the
 streaks and regenerated each scene from Codex's own restoration-edit prompt;
 `realism.py` then finished the result, and Codex exported it as Ultra HDR. The
-skill has no flare-removal step of its own. Check edits like these at 100%: the
+script has no flare-removal step. Check edits like these at 100%: the
 plaza edit turned the "MUSKOKA MARKETPLACE" line under the shop sign into
 illegible lettering. The script-only comparisons above show capture processing
 separately.
