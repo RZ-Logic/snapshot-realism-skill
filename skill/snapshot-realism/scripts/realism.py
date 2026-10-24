@@ -1285,6 +1285,42 @@ def ai_signals(raw, img):
     return list(dict.fromkeys(reasons))
 
 
+CAPTURE_TAGS = (0x829A, 0x829D, 0x8827, 0x920A)  # ExposureTime, FNumber, ISO, FocalLength
+
+
+def camera_capture(img):
+    """'Make Model' when the input carries a camera's capture metadata, else ''.
+
+    That means a make or model plus at least one exposure setting, in the main or the Exif IFD.
+    Like ai_signals it proves nothing; it only keeps default capture effects off what looks like
+    a camera photo when the declared origin says otherwise.
+    """
+    try:
+        exif = img.getexif()
+    except Exception:
+        return ""
+    tags = dict(exif) or dict(getattr(img, "tag_v2", None) or {})
+    try:
+        sub = dict(exif.get_ifd(0x8769))
+    except Exception:
+        sub = {}
+    names = []
+    for tag in (0x010F, 0x0110):  # Make, Model
+        v = tags.get(tag)
+        if isinstance(v, tuple):
+            v = v[0] if v else ""
+        if isinstance(v, bytes):
+            v = v.decode("latin-1", "ignore")
+        v = " ".join(str(v or "").replace("\x00", " ").split())
+        if v and not COMFY_EXIF.match(v):
+            names.append(v[:40])
+    if not names or not any(t in sub or t in tags for t in CAPTURE_TAGS):
+        return ""
+    if len(names) == 2 and names[1].lower().startswith(names[0].lower()):
+        names = names[1:]  # "Canon" + "Canon EOS R5"
+    return " ".join(names)
+
+
 def _user_comment(v):
     """Decode EXIF UserComment by its 8-byte character code."""
     if not isinstance(v, bytes):
@@ -1571,14 +1607,16 @@ def _run(argv, written):
     ap.add_argument("--overwrite", action="store_true", help="replace existing output files (never the input)")
     ap.add_argument("--wb-strength", type=bounded(float, 0.0, 1.0),
                     help="share of a detected color cast to remove, 0 to 1 (default 0.8 for edited and "
-                         "generated, 0 for camera photos, whose own white balance already ran)")
+                         "generated, 0 for camera photos, whose own white balance already ran, and for an "
+                         "input with camera capture metadata and no AI marker)")
     ap.add_argument("--warmth", type=bounded(float, -1.0, 1.0), default=0.0,
                     help="manual shift after auto white balance, -1 to 1: negative cools, positive warms (try -0.1)")
     ap.add_argument("--ca", type=bounded(float, 0.0, 0.01), default=0.001,
                     help="lateral chromatic aberration, 0 to 0.01 (default 0.001; 0 disables)")
     ap.add_argument("--capture-strength", type=bounded(float, 0.0, 3.0),
                     help="strength of simulated capture artifacts, 0 to 3 (default 0.5 for edited and generated, "
-                         "0 for camera photos, which already have real capture texture; 0 disables them); "
+                         "0 for camera photos, which already have real capture texture, and for an input with camera "
+                         "capture metadata and no AI marker; 0 disables them); "
                          "white balance and JPEG quality are controlled separately")
     ap.add_argument("--max-edge", type=bounded(int, 16, 8192), default=1600,
                     help="downscale so the long edge fits, 16 to 8192 (default 1600; never upscales)")
@@ -1656,12 +1694,18 @@ def _run(argv, written):
     if args.keep_date:
         notes.append("kept the capture date %s" % " ".join(dates[t] for t in DATE_TAGS if t in dates) if dates
                      else "the input has no capture date to keep")
+    # the agent may not know a supplied image is a camera photo, so its metadata can switch the defaults off
+    camera_like = "" if reasons or args.origin == "camera" else camera_capture(src)
+    if camera_like:
+        cautions.append("the input carries camera capture metadata (%s) and no AI marker, so it may be a camera "
+                        "photo: capture effects and white balance stay off unless set with --capture-strength or "
+                        "--wb-strength. If it is a camera photo, rerun with --origin camera" % camera_like)
     strength = args.wb_strength
     if strength is None:
-        strength = 0.0 if args.origin == "camera" else 0.8
+        strength = 0.0 if args.origin == "camera" or camera_like else 0.8
     capture = args.capture_strength
     if capture is None:  # a real photo already has real capture texture; adding more only hurts it
-        capture = 0.0 if args.origin == "camera" else 0.5
+        capture = 0.0 if args.origin == "camera" or camera_like else 0.5
         if args.origin == "camera":
             notes.append("camera photos get no capture effects by default; --capture-strength 0.5 adds them")
 
@@ -1719,8 +1763,9 @@ def _run(argv, written):
         if info["strength"] > 0:
             print("white balance: removed %d%% of a %s cast (%s)%s"
                   % (round(info["strength"] * 100), describe_cast(info["cast"]), info["reason"], warmth))
-        elif args.origin == "camera" and args.wb_strength is None:
-            print("white balance: off for camera photos (%s; --wb-strength 0.8 turns it on)%s" % (found, warmth))
+        elif (args.origin == "camera" or camera_like) and args.wb_strength is None:
+            print("white balance: off for %s (%s; --wb-strength 0.8 turns it on)%s"
+                  % ("camera photos" if args.origin == "camera" else "a likely camera photo", found, warmth))
         else:
             print("white balance: no change (%s)%s" % (found, warmth))
     print("capture strength: %g" % info["capture_strength"])

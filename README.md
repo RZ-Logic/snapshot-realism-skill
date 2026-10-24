@@ -61,7 +61,7 @@ New scene ─► prompt ─► generate ─► QA ──────────
 
 Three origins, each declared by you:
 
-- **`camera`**: a genuine photo. The script adds no capture effects to it by default, because a real photo already has real phone texture.
+- **`camera`**: a genuine photo. The script adds no capture effects to it by default, because a real photo already has real phone texture. The agent may not know that a supplied image is a photo, so the script also checks: an input with camera capture metadata (a make or model plus exposure settings) and no AI marker gets no capture effects or white balance by default whatever origin was declared, and a warning that it may be a camera photo.
 - **`edited`**: a camera photo with AI-generated parts, such as inpainting.
 - **`generated`**: made by an image model, including a scene regenerated from a reference photo.
 
@@ -355,11 +355,11 @@ Other projects attack the same "plastic" look from other directions. Grain, frin
 |---|---|
 | `--origin camera\|edited\|generated` | Required. The provenance written to the output (see [Provenance](#provenance)). |
 | `--preset day\|indoor\|night` | Required. The scene's actual light level; sets noise, smear, sharpening and JPEG quality. |
-| `--capture-strength 0..3` | Capture roughness. Default 0.5 for `generated` and `edited`, 0 for `camera`. Try 1 stronger, 2 strong or 3 maximum; 0 bypasses color fringing, noise, noise reduction and sharpening. |
+| `--capture-strength 0..3` | Capture roughness. Default 0.5 for `generated` and `edited`; 0 for `camera` and for an input with camera capture metadata and no AI marker. Try 1 stronger, 2 strong or 3 maximum; 0 bypasses color fringing, noise, noise reduction and sharpening. |
 | `-o PATH`, `--output PATH` | Output `.jpg` or `.jpeg` in an existing folder. Default: the input name without its extension plus `_real.jpg` (`photo.png` gives `photo_real.jpg`), then `_real-2.jpg` and so on. |
 | `--compare` | Also write the output name without its extension plus `_compare.jpg` (`photo_real_compare.jpg`), before and after side by side. |
 | `--overwrite` | Replace an existing `-o` target or output files. Never replaces the input. |
-| `--wb-strength 0..1` | Share of a detected color cast to remove. Default 0.8 for `edited` and `generated`, 0 for `camera` (the phone's own white balance already ran). |
+| `--wb-strength 0..1` | Share of a detected color cast to remove. Default 0.8 for `edited` and `generated`; 0 for `camera` and for an input with camera capture metadata and no AI marker (the phone's own white balance already ran). |
 | `--warmth -1..1` | Manual shift after automatic white balance; negative cools, positive warms (try `-0.1`). |
 | `--ca 0..0.01` | Base lateral chromatic aberration: color fringes at high-contrast edges that grow toward the corners, because a lens focuses colors at slightly different scales. Default 0.001; scaled by capture strength up to 1.5x, so the fringing scale k is at most 0.015 at `--ca 0.01`. A value of 0 disables fringing. |
 | `--max-edge 16..8192` | Downscale so the long edge fits, in linear light. Default 1600; never upscales. |

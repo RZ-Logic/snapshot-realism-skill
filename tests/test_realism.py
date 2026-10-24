@@ -789,6 +789,64 @@ class Provenance(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("C2PA Content Credentials are not carried over", out)
 
+    def camera_jpeg(self, name, make="Apple", model="iPhone 13 Pro Max", iso=True, caption=None):
+        exif = Image.Exif()
+        exif[0x010F] = make
+        exif[0x0110] = model
+        if iso:
+            exif[0x8827] = 400  # ISO, one of the exposure settings a camera writes
+        if caption:
+            exif[0x010E] = caption
+        buf = io.BytesIO()
+        to_image(scene() * WARM).save(buf, "JPEG", quality=95, exif=exif.tobytes())
+        return self.save(name, data=buf.getvalue())
+
+    def test_camera_metadata_keeps_default_effects_off_whatever_the_origin(self):
+        src = self.camera_jpeg("phone.jpg")
+        for origin in ("generated", "edited"):
+            with self.subTest(origin=origin):
+                code, out, _ = run([src, "--origin", origin, "--preset", "indoor", "--seed", "1",
+                                    "-o", self.path("%s.jpg" % origin)])
+                self.assertEqual(code, 0)
+                self.assertIn("capture strength: 0\n", out)
+                self.assertIn("warning: the input carries camera capture metadata (Apple iPhone 13 Pro Max) "
+                              "and no AI marker", out)
+                self.assertIn("white balance: off for a likely camera photo", out)
+
+    def test_explicit_settings_still_apply_to_camera_metadata(self):
+        src = self.camera_jpeg("phone.jpg")
+        code, out, _ = run([src, "--origin", "generated", "--preset", "indoor", "--seed", "1",
+                            "--capture-strength", "0.5", "--wb-strength", "0.8"])
+        self.assertEqual(code, 0)
+        self.assertIn("capture strength: 0.5\n", out)
+        self.assertIn("camera capture metadata", out)
+        self.assertNotIn("white balance: off", out)
+
+    def test_camera_metadata_check_needs_exposure_settings_and_no_ai_marker(self):
+        cases = {"no exposure settings": dict(iso=False),
+                 "an AI marker": dict(caption="Made with AI")}
+        for label, kwargs in cases.items():
+            with self.subTest(label):
+                src = self.camera_jpeg("p-%d.jpg" % len(label), **kwargs)
+                code, out, _ = run([src, "--origin", "generated", "--preset", "indoor", "--seed", "1"])
+                self.assertEqual(code, 0)
+                self.assertIn("capture strength: 0.5\n", out)
+                self.assertNotIn("camera capture metadata", out)
+
+    def test_camera_origin_gets_no_extra_camera_metadata_warning(self):
+        src = self.camera_jpeg("phone.jpg")
+        code, out, _ = run([src, "--origin", "camera", "--preset", "indoor", "--seed", "1"])
+        self.assertEqual(code, 0)
+        self.assertNotIn("camera capture metadata", out)
+        self.assertIn("white balance: off for camera photos", out)
+
+    def test_camera_capture_names_the_camera_once(self):
+        src = self.camera_jpeg("canon.jpg", make="Canon", model="Canon EOS R5")
+        with Image.open(src) as im:
+            self.assertEqual(realism.camera_capture(im), "Canon EOS R5")
+        with Image.open(self.save("plain.png")) as im:
+            self.assertEqual(realism.camera_capture(im), "")
+
     def test_outputs_cannot_be_processed_again(self):
         src = self.save("once.png")
         self.assertEqual(run([src, "--origin", "generated", "--preset", "day"])[0], 0)

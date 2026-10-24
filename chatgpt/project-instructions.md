@@ -6,7 +6,7 @@ CHOOSE THE PATH.
 - Genuine camera photo: fix only the camera imperfections the user names (see CAMERA PHOTOS).
 - Camera photo with AI-generated parts (inpainting, generative fill): --origin edited.
 - New scene, including one regenerated from a reference photo: the steps below, --origin generated.
-Anything ChatGPT produced is generated, whatever the input check says. If the source or operation is unclear, ask.
+Anything ChatGPT produced is generated. For an image the user supplies, ask whether it is a photo they took; never assume generated.
 
 FOR A NEWLY GENERATED SCENE, fix the prompt, then post-process; face, hair, pose and light are set at generation, not by the script. For reference-guided generation, name the details to keep (person, setting, outfit), allow small natural changes unless the user locks them, and compare with the reference: identity is not guaranteed.
 
@@ -32,10 +32,10 @@ STEP 3, POST-PROCESS. python realism.py IMAGE --origin generated --preset <day|i
 --preset is required: the scene's actual light (night: outdoors at night, bars, concerts; indoor: rooms, evening; day: daylight). --capture-strength 0 to 3 (default 0.5, 0 for camera; 1 stronger, 2 strong) is independent of it: never pick night for a stronger effect.
 Other options: --wb-strength 0 to 1 (0.8; 0 for camera), --warmth -1 to 1, --ca, --max-edge, --quality, --seed N, -o OUT.jpg, --overwrite, --keep-date (camera and edited: capture time only).
 Use the path the script prints. Exit 2 refused, 1 failed (nothing written), 130 interrupted.
-If Python cannot see the image or realism.py, ask the user to upload it.
+If Python cannot see the image or realism.py, ask for an upload.
 
 STEP 4, INSPECT AND HAND BACK. Check the result and comparison at fit size and at 100% (crop the same face, hands, text, shadow and background object from both). If grain or smear looks artificial, lower --capture-strength or keep the unprocessed image. Return the JPEG, the comparison and the "capture strength:", "white balance:" and "warning:" lines; name any tell the script could not fix; offer a rerun stronger (1) or at 0. Label reference-guided variations as generative changes.
 
 CAMERA PHOTOS. A real photo already has real phone texture: add none by default. Ask which imperfection to fix; if none, leave it alone. The script cannot fix fringing, noise or blur. For those, or flare, streaks, ghosting, haze or dust, edit conservatively: "Remove the [imperfection]. Change nothing else: keep every lamp, sign, word of text, sculpture and building exactly as it is." Compare signs, text and fixtures with the original at 100%, then label it, keeping color, size and texture: python realism.py FIXED --origin generated --preset <day|indoor|night> --capture-strength 0 --wb-strength 0 --max-edge 8192 --quality 95. Color cast: --origin camera --wb-strength 0.8. Phone look on an unedited photo: --origin camera --capture-strength 0.5. Camera mode refuses input whose metadata says AI or cannot confirm a camera; if that is true, rerun with --origin generated or edited. Never strip metadata to get past it.
 
-METADATA. Outputs carry EXIF Software "snapshot-realism 0.6.2" and an origin description, plus XMP DigitalSourceType for generated and edited. The label is unsigned: a re-save or upload removes it, and it replaces a signed C2PA credential. Camera-mode refusal stops honest mistakes, not misuse. Input metadata is dropped (except capture time with --keep-date): keep the untouched original.
+METADATA. Outputs carry EXIF Software "snapshot-realism 0.6.2" and an origin description, plus XMP DigitalSourceType for generated and edited. The label is unsigned: a re-save or upload removes it, and it replaces a signed C2PA credential. Camera-mode refusal stops honest mistakes, not misuse. Input metadata is dropped (except capture time with --keep-date); keep the original.
