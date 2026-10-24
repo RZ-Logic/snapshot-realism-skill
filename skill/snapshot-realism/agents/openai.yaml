@@ -1,6 +1,6 @@
 interface:
   display_name: "Snapshot Realism"
-  short_description: "Natural phone look for camera and generated photos"
-  default_prompt: "Use $snapshot-realism to give this photo a natural phone-snapshot look; the output declares its origin (camera, edited or generated) in its metadata"
+  short_description: "Phone-snapshot look for AI images, fixes for camera photos"
+  default_prompt: "Use $snapshot-realism to give this generated image a natural phone-snapshot look, or to fix this camera photo's flare or haze; the output declares its origin (camera, edited or generated) in its metadata"
 policy:
   allow_implicit_invocation: true

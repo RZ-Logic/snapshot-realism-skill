@@ -56,11 +56,11 @@ if errorlevel 1 goto :old_python
 if errorlevel 1 goto :no_packages
 if "%~1"=="" goto :no_files
 
-echo Origin: C = a camera photo, processed directly
+echo Origin: C = a genuine camera photo
 echo         E = a camera photo with AI-generated parts, such as inpainting
 echo         G = made by an image model, including a scene rebuilt from a reference photo
 echo Light:  the scene's actual light level: D = day, I = indoor, N = night
-echo Capture strength: 0 = off, L = light (the script's default), N = normal, S = strong; 0 suits your own camera photos
+echo Capture strength: 0 = off (best for your own camera photos), L = light (the default for generated and edited), N = normal, S = strong
 
 :next
 if "%~1"=="" goto :summary

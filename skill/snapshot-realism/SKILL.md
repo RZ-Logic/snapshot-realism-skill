@@ -1,6 +1,6 @@
 ---
 name: snapshot-realism
-description: Gives an image the look of an ordinary phone snapshot with a script that adds sensor noise, phone-style noise reduction and sharpening, color fringing and a neutral white balance, then saves a JPEG whose metadata states its declared origin (camera, edited or generated). Use it to process a genuine camera photo, an AI edit of a camera photo, or a newly generated scene, and to write the prompt for a candid generated scene. For fictional people, the user's own likeness, or people who gave permission. Never for hiding that an image is AI-generated.
+description: Gives an image the look of an ordinary phone snapshot with a script that adds sensor noise, phone-style noise reduction and sharpening, color fringing and a neutral white balance, then saves a JPEG whose metadata states its declared origin (camera, edited or generated). Use it to finish a newly generated scene or an AI edit of a camera photo, to fix a genuine camera photo's imperfections (flare, light streaks, haze, dust) without adding grain, and to write the prompt for a candid generated scene. For fictional people, the user's own likeness, or people who gave permission. Never for hiding that an image is AI-generated.
 license: MIT
 compatibility: Needs code execution with Python 3.9+, numpy and Pillow. Without it only the prompt recipe works. Optional C2PA signing (--sign) also needs c2pa-python 0.38+ on Python 3.10+.
 metadata:
@@ -26,7 +26,7 @@ that an image is AI-generated or to pass a generated image off as a camera photo
 
 | Situation | Path | `--origin` |
 |---|---|---|
-| A genuine camera photo | Fix only the camera imperfections the user names; add no capture effects by default (see below). | `edited` after an AI fix, else `camera` |
+| A genuine camera photo | Fix only the camera imperfections the user names; add no capture effects by default (see below). | `generated` after an AI fix (`edited` for a masked inpaint), else `camera` |
 | A camera photo with AI-generated parts (inpainting, object removal, generative fill) | Process the edited file directly. | `edited` |
 | A newly generated scene, including one regenerated from a reference photo | Prompt recipe, generate, Gate A and Gate B, script, inspect, hand back. | `generated` |
 
@@ -37,8 +37,7 @@ unclear, ask; appearance alone does not establish where an image came from.
 Always work on a copy in a writable folder. The script never overwrites the input.
 
 Capture strength changes capture artifacts, not facial features, individual hairs, pose or scene
-structure. Use a specific generation prompt or generative edit for those changes; increasing
-strength alone cannot produce them. A genuine camera photo already has real capture texture.
+structure; those need a specific generation prompt or generative edit.
 
 For reference-guided generation, name the details the user wants kept, such as the same person's
 identity, setting or requested outfit. Unless the user locks them, allow small natural changes in
@@ -84,9 +83,9 @@ check for identity drift before accepting it.
 
    The default `--capture-strength` is 0.5 (0 for camera photos); strength is independent of the
    preset (`1` stronger, `2` strong, `3` maximum): do not choose `night` for a stronger effect.
-   Strength means how rough the capture was: it raises noise and noise reduction, sharpening never
-   exceeds the preset, and color fringing stops growing at 1.5x. At `0` those capture effects are
-   bypassed; white balance, warmth, resize, JPEG quality and origin still apply.
+   Strength means how rough the capture was: it raises noise and noise reduction, sharpening reaches
+   the table's value at 1 and no more, and color fringing stops growing at 1.5x. At `0` those
+   capture effects are bypassed; white balance, warmth, resize, JPEG quality and origin still apply.
 
    If the user asked for warm light (candles, a lamp, sunset), add `--wb-strength 0` so the script
    does not neutralize it.
@@ -118,23 +117,25 @@ edited region for Gate A failures before processing.
 
 ## Existing camera photo: fix camera imperfections
 
-A real photo already has real phone texture, so do not add more by default. Ask which camera
-imperfection to fix: flare or light streaks, ghosting, haze, dust spots, color fringing, noise or
-blur. If none, leave the photo alone. For flare, streaks, ghosting, haze or dust, make a
-conservative AI edit: "Remove the [imperfection]. Change nothing else: keep every lamp, sign, word
-of text, sculpture and building exactly as it is." Image models redraw signs, text and fixtures, so
-compare them with the original at 100%. The result is AI-edited; label it without adding grain:
+A real photo already has real phone texture, so add none by default. Ask which imperfection to
+fix; if none, leave the photo alone. The script cannot remove color fringing, noise or blur (for a
+color cast, see white balance below). For those, or for flare, light streaks, ghosting, haze or
+dust, make a conservative AI edit: "Remove the [imperfection]. Change nothing else: keep every
+lamp, sign, word of text, sculpture and building exactly as it is." Without an image tool, give the
+user that prompt and continue when they supply the file. Image models redraw signs, text and
+fixtures, so compare them with the original at 100%. Then label the result without changing its
+color, size or texture: `generated` when the model returned a whole new frame (Codex `image_gen`
+and ChatGPT do), `edited` only for a masked inpaint that kept the other pixels:
 
 ```bash
-python <skill-dir>/scripts/realism.py EDITED --origin edited --preset <day|indoor|night> --capture-strength 0
+python <skill-dir>/scripts/realism.py FIXED --origin generated --preset <day|indoor|night> --capture-strength 0 --wb-strength 0 --max-edge 8192 --quality 95
 ```
 
 Add capture effects (`--origin camera --capture-strength 0.5`) only when the user wants a phone
 look on an unedited photo, such as a polished DSLR shot.
 
-Add `--keep-date` (camera and edited only) to carry the capture time over: it copies the three
-capture-time tags and nothing else, never GPS, device or lens data. With `--origin generated` it is
-an argument error.
+Add `--keep-date` (camera and edited only) to carry over the three capture-time tags and nothing
+else, never GPS, device or lens data; with `--origin generated` it is an argument error.
 
 White balance is off by default for camera photos, because the phone's own white balance already
 ran; `--wb-strength 0.8` turns it on for a visible cast. Do not say this script authenticates an
@@ -167,7 +168,7 @@ signed file's bytes differ between runs even with `--seed`; its pixels do not.
 | Option | Range | Default | Effect |
 |---|---|---|---|
 | `INPUT` | image file | required | JPEG, PNG, WebP and other Pillow formats; HEIC if `pillow-heif` is installed |
-| `--origin` | `camera`, `edited`, `generated` | required | Provenance written to the output. camera: a genuine photo, processed directly. edited: a camera photo with AI-generated parts, e.g. inpainting. generated: made by an image model, including scenes built from a reference photo |
+| `--origin` | `camera`, `edited`, `generated` | required | Provenance written to the output. camera: a genuine photo (no capture effects by default). edited: a camera photo with AI-generated parts, e.g. inpainting. generated: made by an image model, including scenes built from a reference photo |
 | `--preset` | `day`, `indoor`, `night` | required | The scene's actual light level; sets noise, smear, sharpening and JPEG quality |
 | `--capture-strength` | 0 to 3 | 0.5; 0 for `camera` | Capture effects: 0 off, 0.5 light, 1 stronger, 2 strong, 3 maximum; independent of light level, white balance and JPEG quality |
 | `-o`, `--output` | path ending `.jpg` or `.jpeg`, in an existing folder | the input name without its extension plus `_real.jpg` (`photo.png` gives `photo_real.jpg`), or `_real-2.jpg` and so on if that exists | Output file |
