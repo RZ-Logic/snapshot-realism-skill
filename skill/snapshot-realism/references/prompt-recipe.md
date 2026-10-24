@@ -21,7 +21,10 @@ Write one paragraph in this order. Each slot pushes away from a specific tell.
    someone who consented (confirm that first); then preserve their identity and describe only
    visible, relevant details. Real skin: visible pores, uneven tone, a blemish or two, under-eye
    shadows. Everyday makeup or none. Hair with flyaways, frizz, a strand stuck to the cheek; never
-   "glossy" or "flowing".
+   "glossy" or "flowing". Generators polish women hardest (smooth symmetric face, styled hair, a
+   soft camera smile), so for a woman push each of these: no makeup or a little worn-off everyday
+   makeup, hair as it sits late in the day (tied back, flattened or frizzy), an expression caught
+   mid-thought rather than a smile for the camera, and ordinary clothes she would wear that day.
 3. **Moment**: mid-action and not posing. Talking, mid-laugh, glancing off-frame, half-turned,
    holding a drink or phone. Avoid eye contact plus a closed-mouth smirk: that is the default AI
    pose.
@@ -50,6 +53,12 @@ to reuse. Let the named light fall off across the room (a far corner darker, a w
 the wall): even light everywhere reads as a listing photo. Do not add clutter, stains or wear by
 default: a new sofa, a tidy home, a hotel or a showroom can be pristine. Keep the user's subject,
 outfit and locked scene details.
+
+Image models put house plants in almost every room, and an unasked plant reads as staging. Do not
+mention plants unless the request or the place calls for them (a garden centre, a plant shop).
+Name what actually fills the corners and windowsills instead (a bare sill, a floor lamp, a
+bookshelf), because a negated "no plants" tends to pull them in. An unasked plant counts toward the
+showroom tell.
 
 After generating, check the two or three most prominent background objects and where the subject
 touches them. Judge visible evidence, not tidiness:
