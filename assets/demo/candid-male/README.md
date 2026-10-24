@@ -72,7 +72,8 @@ python skill/snapshot-realism/scripts/realism.py assets/demo/candid-male/skill-b
 
 This creates `portrait-check.jpg` and `portrait-check_compare.jpg` in the current
 folder; use a new output name if those files already exist. Script version: 0.6.1.
-The indoor preset matches the room, capture strength 1 is normal, and
+The indoor preset matches the room, capture strength 1 was the default then
+(0.5 since 0.6.2), and
 white-balance strength 0.8 is the default for a generated image and matches the
 neutral-balance request. The script left the cool window light alone. Max edge
 1672 keeps the generated file's native 941 x 1672 resolution.

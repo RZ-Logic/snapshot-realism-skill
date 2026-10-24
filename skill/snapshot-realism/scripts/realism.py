@@ -1559,7 +1559,7 @@ def _run(argv, written):
     ap = argparse.ArgumentParser(description="Apply a phone-snapshot look to an image.")
     ap.add_argument("input")
     ap.add_argument("--origin", choices=tuple(ORIGINS), required=True,
-                    help="provenance written to the output: camera (a genuine photo, processed directly), "
+                    help="provenance written to the output: camera (a genuine photo; no capture effects by default), "
                          "edited (a camera photo with AI-generated parts, e.g. inpainting), "
                          "generated (made by an image model, including scenes built from a reference photo)")
     ap.add_argument("--preset", choices=("day", "indoor", "night"), required=True,

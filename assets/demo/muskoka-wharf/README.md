@@ -57,7 +57,7 @@ in Codex using Snapshot Realism. The edits remove intrusive light streaks and
 change some scene detail, including foliage. Codex's image model removed the
 streaks and regenerated each scene from Codex's own restoration-edit prompt;
 `realism.py` then finished the result, and Codex exported it as Ultra HDR. The
-skill has no flare-removal step of its own. Check edits like these at 100%: the
+script has no flare-removal step. Check edits like these at 100%: the
 plaza edit turned the "MUSKOKA MARKETPLACE" line under the shop sign into
 illegible lettering. The script-only comparisons above show capture processing
 separately.
