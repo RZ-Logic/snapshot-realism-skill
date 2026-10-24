@@ -55,11 +55,16 @@ the wall): even light everywhere reads as a listing photo. Do not add clutter, s
 default: a new sofa, a tidy home, a hotel or a showroom can be pristine. Keep the user's subject,
 outfit and locked scene details.
 
-Image models put house plants in almost every room. Do not mention plants unless the request or
-the place calls for them (a garden centre, a plant shop): a negated "no plants" tends to pull them
-in. If corners or sills are in frame, name what that place would really have there. Plants count
-toward the showroom tell only when they look staged (several, evenly placed, a styled corner plant)
-or the user asked to remove them.
+Image models dress rooms with house plants, cut flowers and styled props (a plant lit beside a
+lamp, a vase of sprigs, a floral mug, a neat book stack), and the set repeats from draw to draw.
+Keep plants and flowers out unless the request asks for them or the place is a plant business (a
+garden centre, a florist); a cafe, kitchen, office or home does not call for them. Say what sits on
+each surface near the subject and on the one or two surfaces behind them, using ordinary things
+that place has in use ("the desk holds a laptop, a phone charger and a takeaway cup"), not added
+clutter, then end the prompt with the plain line "No house plants or flowers." In a blind test this
+kept plants out of all 27 images, against 22 of 27 without it. It is the one exclusion the recipe
+writes out; keep other negations out, such as night mode. An unasked plant or flowers count toward
+the showroom tell.
 
 After generating, check the two or three most prominent background objects and where the subject
 touches them. Judge visible evidence, not tidiness:
@@ -68,8 +73,8 @@ touches them. Judge visible evidence, not tidiness:
   window frames), and contact shadows where objects meet a surface. Clearly impossible construction
   or support, including an object that floats with no contact, is Gate A; occlusion or an unfamiliar
   design is not.
-- **Arrangement:** objects lined up, evenly spaced or squared to the camera, or house plants
-  placed like a styled set, in a place the user wants lived in. A tidy room is not a defect.
+- **Arrangement:** objects lined up, evenly spaced or squared to the camera in a place the user
+  wants lived in, or any unasked house plant or flowers. A tidy room is not a defect.
 - **Materials:** creases and cushion compression that match weight and use; no repeated identical
   objects or textures, no uniformly inflated upholstery. Grain cannot add these.
 - **Light and depth:** background light, reflections and softness agree with the scene. Do not hide
@@ -156,7 +161,7 @@ slot that failed.
 | Glossy hair clumps with no flyaways | Subject slot | No |
 | Even, flattering light on a night scene | Light slot | No |
 | Creamy uniform background blur | Drop or translate the blur words (see above), ask for a phone | No |
-| Showroom background in a place the user wants lived in: objects lined up or evenly spaced, identical repeats, uniformly plump upholstery, staged house plants | Scene and background pass: a specific place in use, one or two supported cues, light that falls off, tighter framing | No |
+| Showroom background in a place the user wants lived in: objects lined up or evenly spaced, identical repeats, uniformly plump upholstery; or any unasked house plant or flowers | Scene and background pass: a specific place in use, one or two supported cues, the surfaces near the subject named, "No house plants or flowers.", light that falls off, tighter framing | No |
 
 The script fixes clean noiseless shadows and over-crisp lossless-looking detail, so they do not
 count toward Gate B. A warm yellow-orange cast counts as fixed only when the script's

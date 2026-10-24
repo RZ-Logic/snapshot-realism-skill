@@ -36,8 +36,7 @@ unclear, ask; appearance alone does not establish where an image came from.
 
 Always work on a copy in a writable folder. The script never overwrites the input.
 
-Capture strength changes capture artifacts, not facial features, individual hairs, pose or scene
-structure; those need a specific generation prompt or generative edit.
+Capture strength changes capture artifacts, not faces, hair, pose or scene structure.
 
 For reference-guided generation, name the details the user wants kept, such as the same person's
 identity, setting or requested outfit. Unless the user locks them, allow small natural changes in
@@ -53,7 +52,8 @@ check for identity drift before accepting it.
    requirement (soft light, bokeh, beautiful, cozy and the like), and tell the user what you dropped
    and translated. For night, describe what a phone night shot looks like and never pair "iPhone"
    with "high ISO, grainy". Ask for one or two capture imperfections, not a full checklist. Name the
-   setting specifically and apply the recipe's scene and background pass. Show the rewritten prompt.
+   setting specifically and apply the recipe's scene pass: no house plants or flowers unless asked,
+   ending the prompt with "No house plants or flowers." Show the rewritten prompt.
 2. **Generate** from the rewritten prompt, including supplied references for details that must carry
    over; portrait orientation for people unless asked. In Codex, use the built-in `image_gen` tool,
    passing the rewritten prompt as written: skip the imagegen skill's prompt augmentation and its
