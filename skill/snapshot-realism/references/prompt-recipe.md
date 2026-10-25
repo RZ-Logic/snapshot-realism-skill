@@ -41,7 +41,8 @@ Write one paragraph in this order. Each slot pushes away from a specific tell.
    blur, missed focus, compression, all at once) becomes its own uniform tell. Ask for neutral or
    cool white balance; generators lean warm. If the user wants warm light (candles, a lamp,
    sunset), name that source in the light slot and leave the neutral request out; then run the
-   script with `--wb-strength 0`.
+   script with `--wb-strength 0 --warmth -0.2`, which keeps the light warm but takes out the
+   generator's extra warm tint (picked over no correction for all 18 lamp-lit images in a test).
 
 ## Scene and background
 

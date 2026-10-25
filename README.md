@@ -373,7 +373,7 @@ Numeric options are checked before anything is read or written; out-of-range val
 
 ### White balance
 
-White balance corrects only when the scene has a clear near-neutral surface, and the script prints what it did and why. Foliage, cool light and toned or sepia images get no change; strongly warm surfaces (terracotta or peach walls, skin close-ups, golden hour) usually get little or none. Cream, beige or latte walls and pale skin can read as a warm cast, because they look like a gray surface under warm light; if the result looks cold, rerun with `--wb-strength 0`.
+White balance corrects only when the scene has a clear near-neutral surface, and the script prints what it did and why. Foliage, cool light and toned or sepia images get no change; strongly warm surfaces (terracotta or peach walls, skin close-ups, golden hour) usually get little or none. Cream, beige or latte walls and pale skin can read as a warm cast, because they look like a gray surface under warm light; if the result looks cold, rerun with `--wb-strength 0`. For a scene the user wants warm (a lamp, candles), the skill runs `--wb-strength 0 --warmth -0.2`: the light stays warm, but the generator's extra warm tint comes out. Automatic white balance rarely helps there, because lamp-lit rooms seldom show a neutral surface; in a 2026-10-25 check it changed 2 of 18 such images, and the maintainer picked the `-0.2` version over no correction for all 18.
 
 ### Exit codes
 

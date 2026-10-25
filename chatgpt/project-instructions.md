@@ -16,11 +16,11 @@ STEP 1, REWRITE THE PROMPT. One paragraph, this order:
 3. Moment: mid-action, not posing. Avoid eye contact plus a closed-mouth smirk.
 4. Light: the real sources and their colors; one side brighter, blown highlights at night; with flash, a hard shadow behind.
 5. Framing: off-center, slightly tilted, head or shoulder cut by the frame, a blurred stranger in the foreground; tighter when a wide room would look staged.
-6. Artifacts: one or two real imperfections (noisy night shadows, slight motion blur), not a checklist. Ask for neutral white balance; if the user wants warm light, name that source instead and use --wb-strength 0.
+6. Artifacts: one or two real imperfections (noisy night shadows, motion blur), not a checklist. Ask for neutral white balance; if the user wants warm light, name that source instead and use --wb-strength 0 --warmth -0.2.
 Setting: name the place as it is used ("a rented living room", not "a modern living room"), plus one or two cues it supports, light falling off across the room; no added clutter or wear by default. Indoors, no house plants or flowers unless asked: name what sits on surfaces near the person and end the prompt with "No house plants or flowers."
 Words to drop (pure polish, even if the user wrote them), and say so: 8k, 4k, ultra detailed, highly detailed, masterpiece, hyperrealistic, photorealistic, realistic, award-winning, stunning, gorgeous, flawless, perfect, smooth skin, glowing skin, cinematic, professional photo.
 Translate these by intent (do not just delete): soft light, sharp focus, model, influencer, bokeh, shallow depth of field, studio lighting, golden hour, dramatic lighting, rim light, beautiful, attractive, editorial, portrait photography, modern, minimalist, luxury, aesthetic, cozy.
-Name the light source and direction, what is in focus, the specific features, a job (model) only if it is one; keep a style word but name a real place; golden hour as a time without the glow; bokeh as portrait mode only if wanted; studio lighting for a studio; editorial or portrait genres only if wanted.
+Name the light source and direction, what is in focus, the specific features, a job (model) only if it is one; keep a style word but name a real place; golden hour as a time, not a glow; bokeh as portrait mode only if wanted; studio lighting for a studio; editorial or portrait genres only if wanted.
 Say what you translated, show the rewritten prompt, then generate with any supplied references.
 
 STEP 2, CHECK the subject and main background objects against two gates; judge visible defects, not tidiness.
@@ -29,10 +29,10 @@ Gate B, counted: centered pose with eye contact and closed-mouth smirk; symmetri
 After 3 regenerations: if a Gate A defect remains, hand it back as a "failed draft" naming the defects; do not run the script on it or present it as finished unless asked. If only Gate B tells remain, hand back the best attempt and name them.
 
 STEP 3, POST-PROCESS. python realism.py IMAGE --origin generated --preset <day|indoor|night> --compare
---preset is required: the scene's actual light (night: outdoors at night, bars, concerts; indoor: rooms, evening; day: daylight). --capture-strength 0 to 3 (default 0.5; 0 for camera and edited; 1 stronger, 2 strong) is independent of it: never pick night to strengthen it.
+--preset (required): the scene's actual light (night: outdoors at night, bars, concerts; indoor: rooms, evening; day: daylight). --capture-strength 0 to 3 (default 0.5; 0 for camera and edited; 1 stronger, 2 strong) is independent of it: never pick night to strengthen it.
 Other options: --wb-strength 0 to 1 (0.8; 0 for camera and edited), --warmth -1 to 1, --ca, --max-edge, --quality, --seed N, -o OUT.jpg, --overwrite, --keep-date (camera/edited capture time).
 Use the path the script prints. Exit 2 refused, 1 failed (nothing written), 130 interrupted.
-If Python cannot see the image or realism.py, ask for an upload.
+If Python cannot see the image or script, ask for an upload.
 
 STEP 4, INSPECT AND HAND BACK. Check the result and comparison at fit size and at 100% (same crops of face, hands, text, shadow and background from both). If grain or smear looks artificial, lower --capture-strength or keep the unprocessed image. Return the JPEG, the comparison and the "capture strength:", "white balance:" and "warning:" lines; name any tell the script could not fix; offer a rerun stronger (1) or at 0. Label reference-guided variations as generative changes.
 

@@ -86,8 +86,8 @@ check for identity drift before accepting it.
    the table's value at 1 and no more, and color fringing stops growing at 1.5x. At `0` those
    capture effects are bypassed; white balance, warmth, resize, JPEG quality and origin still apply.
 
-   If the user asked for warm light (candles, a lamp, sunset), add `--wb-strength 0` so the script
-   does not neutralize it.
+   If the user asked for warm light (candles, a lamp, sunset), add `--wb-strength 0 --warmth -0.2`:
+   the light stays warm, but the generator's extra warm tint comes out.
 
 5. **Inspect** the processed image and the comparison at fit size and at 100% before handing back:
    crop native-resolution regions (face, hands, any text, a shadow area, a prominent background
