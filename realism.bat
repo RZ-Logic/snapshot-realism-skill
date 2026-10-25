@@ -60,7 +60,7 @@ echo Origin: C = a genuine camera photo
 echo         E = a camera photo with AI-generated parts, such as inpainting
 echo         G = made by an image model, including a scene rebuilt from a reference photo
 echo Light:  the scene's actual light level: D = day, I = indoor, N = night
-echo Capture strength: 0 = off (best for your own camera photos), L = light (the default for generated and edited), N = normal, S = strong
+echo Capture strength: 0 = off (best for your own camera photos), L = light (the default for generated images), N = normal, S = strong
 
 :next
 if "%~1"=="" goto :summary

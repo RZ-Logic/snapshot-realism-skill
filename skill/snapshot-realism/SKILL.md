@@ -31,12 +31,11 @@ that an image is AI-generated or to pass a generated image off as a camera photo
 | A newly generated scene, including one regenerated from a reference photo | Prompt recipe, generate, Gate A and Gate B, script, inspect, hand back. | `generated` |
 
 Anything Codex `image_gen` or ChatGPT produced is `generated`, whatever the input check says. For an
-image the user supplies, ask whether it is a photo they took unless they said; never assume
-`generated`, because appearance alone does not establish where an image came from.
+image the user supplies, unless they said, ask whether it is a photo they took and whether an AI
+tool changed it; never assume `generated`: appearance alone does not establish where it came from.
 
-Always work on a copy in a writable folder. The script never overwrites the input.
-
-Capture strength changes capture artifacts, not faces, hair, pose or scene structure.
+Always work on a copy in a writable folder; the script never overwrites the input. Capture strength
+changes capture artifacts, not faces, hair, pose or scene structure.
 
 For reference-guided generation, name the details the user wants kept, such as the same person's
 identity, setting or requested outfit. Unless the user locks them, allow small natural changes in
@@ -81,7 +80,7 @@ check for identity drift before accepting it.
    | `indoor` | Rooms, offices, evening | 88 | 0.40 |
    | `day` | Daylight | 90 | 0.45 |
 
-   The default `--capture-strength` is 0.5 (0 for camera photos); strength is independent of the
+   The default `--capture-strength` is 0.5 (0 for camera and edited photos); strength is independent of the
    preset (`1` stronger, `2` strong, `3` maximum): do not choose `night` for a stronger effect.
    Strength means how rough the capture was: it raises noise and noise reduction, sharpening reaches
    the table's value at 1 and no more, and color fringing stops growing at 1.5x. At `0` those
@@ -112,8 +111,9 @@ Finding the image:
 
 ## AI edit of a camera photo
 
-Same command with `--origin edited`. The recipe does not apply; the photo already exists. Check the
-edited region for Gate A failures before processing.
+Same command with `--origin edited`; like a camera photo it gets no capture effects or white balance
+unless the user asks. Check the edited region for Gate A failures first. If the script warns of
+camera metadata, keep `edited`.
 
 ## Existing camera photo: fix camera imperfections
 
@@ -137,9 +137,9 @@ look on an unedited photo, such as a polished DSLR shot.
 Add `--keep-date` (camera and edited only) to carry over the three capture-time tags and nothing
 else, never GPS, device or lens data; with `--origin generated` it is an argument error.
 
-White balance is off by default for camera photos, because the phone's own white balance already
-ran; `--wb-strength 0.8` turns it on for a visible cast. Do not say this script authenticates an
-image: an input with no AI marker is not proof of camera origin.
+White balance is off by default for camera and edited photos, because the phone's own white balance
+already ran; `--wb-strength 0.8` turns it on for a visible cast. Do not say this script
+authenticates an image: an input with no AI marker is not proof of camera origin.
 
 ## Signed Content Credentials (optional)
 
@@ -170,11 +170,11 @@ signed file's bytes differ between runs even with `--seed`; its pixels do not.
 | `INPUT` | image file | required | JPEG, PNG, WebP and other Pillow formats; HEIC if `pillow-heif` is installed |
 | `--origin` | `camera`, `edited`, `generated` | required | Provenance written to the output. camera: a genuine photo (no capture effects by default). edited: a camera photo with AI-generated parts, e.g. inpainting. generated: made by an image model, including scenes built from a reference photo |
 | `--preset` | `day`, `indoor`, `night` | required | The scene's actual light level; sets noise, smear, sharpening and JPEG quality |
-| `--capture-strength` | 0 to 3 | 0.5; 0 for `camera` and for an input with camera capture metadata and no AI marker (with a warning) | Capture effects: 0 off, 0.5 light, 1 stronger, 2 strong, 3 maximum; independent of light level, white balance and JPEG quality |
+| `--capture-strength` | 0 to 3 | 0.5 for `generated`; 0 for `camera`, `edited` and any input with camera capture metadata (with a warning) | Capture effects: 0 off, 0.5 light, 1 stronger, 2 strong, 3 maximum; independent of light level, white balance and JPEG quality |
 | `-o`, `--output` | path ending `.jpg` or `.jpeg`, in an existing folder | the input name without its extension plus `_real.jpg` (`photo.png` gives `photo_real.jpg`), or `_real-2.jpg` and so on if that exists | Output file |
 | `--compare` | flag | off | Also write `<output name without extension>_compare.jpg` (before on the left, after on the right); by default `photo_real_compare.jpg` for `photo.png` |
 | `--overwrite` | flag | off | Replace existing output files; never the input |
-| `--wb-strength` | 0 to 1 | 0.8 for `edited` and `generated`; 0 for `camera` and for an input with camera capture metadata and no AI marker | Share of a detected color cast to remove |
+| `--wb-strength` | 0 to 1 | 0.8 for `generated`; 0 for `camera`, `edited` and any input with camera capture metadata | Share of a detected color cast to remove |
 | `--warmth` | -1 to 1 | 0 | Manual shift after auto white balance; negative cools, positive warms (try -0.1) |
 | `--ca` | 0 to 0.01 | 0.001 | Base lateral chromatic aberration, scaled by capture strength up to 1.5x (k at most 0.015 at `--ca 0.01`); 0 disables fringing |
 | `--max-edge` | 16 to 8192 | 1600 | Downscale so the long edge fits; never upscales |

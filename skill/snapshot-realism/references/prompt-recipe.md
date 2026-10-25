@@ -57,14 +57,14 @@ outfit and locked scene details.
 
 Image models dress rooms with house plants, cut flowers and styled props (a plant lit beside a
 lamp, a vase of sprigs, a floral mug, a neat book stack), and the set repeats from draw to draw.
-Keep plants and flowers out unless the request asks for them or the place is a plant business (a
-garden centre, a florist); a cafe, kitchen, office or home does not call for them. Say what sits on
-each surface near the subject and on the one or two surfaces behind them, using ordinary things
-that place has in use ("the desk holds a laptop, a phone charger and a takeaway cup"), not added
-clutter, then end the prompt with the plain line "No house plants or flowers." In a blind test this
-kept plants out of all 27 images, against 22 of 27 without it. It is the one exclusion the recipe
-writes out; keep other negations out, such as night mode. An unasked plant or flowers count toward
-the showroom tell.
+In an indoor scene, keep plants and flowers out unless the request asks for them or the place is a
+plant business (a garden centre, a florist); a cafe, kitchen, office or home does not call for
+them. Say what sits on each surface near the subject and on the one or two surfaces behind them,
+using ordinary things that place has in use ("the desk holds a laptop, a phone charger and a
+takeaway cup"), not added clutter, then end the prompt with the plain line "No house plants or
+flowers." In a 54-image test of indoor scenes this kept plants out of all 27 images, against 22 of
+27 without it. It is the one exclusion the recipe writes out; keep other negations out, such as
+night mode. An unasked plant or flowers indoors count toward the showroom tell.
 
 After generating, check the two or three most prominent background objects and where the subject
 touches them. Judge visible evidence, not tidiness:

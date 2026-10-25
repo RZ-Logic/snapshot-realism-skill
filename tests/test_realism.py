@@ -793,8 +793,8 @@ class Provenance(unittest.TestCase):
         exif = Image.Exif()
         exif[0x010F] = make
         exif[0x0110] = model
-        if iso:
-            exif[0x8827] = 400  # ISO, one of the exposure settings a camera writes
+        if iso:  # ISO, one of the exposure settings a camera writes, in the Exif IFD where cameras put it
+            exif[0x8769] = {0x8827: 400}
         if caption:
             exif[0x010E] = caption
         buf = io.BytesIO()
@@ -809,8 +809,9 @@ class Provenance(unittest.TestCase):
                                     "-o", self.path("%s.jpg" % origin)])
                 self.assertEqual(code, 0)
                 self.assertIn("capture strength: 0\n", out)
-                self.assertIn("warning: the input carries camera capture metadata (Apple iPhone 13 Pro Max) "
-                              "and no AI marker", out)
+                self.assertIn("warning: the input carries camera capture metadata (Apple iPhone 13 Pro Max): ", out)
+                self.assertIn("Default capture effects and white balance left off", out)
+                self.assertEqual("rerun with --origin camera" in out, origin == "generated")
                 self.assertIn("white balance: off for a likely camera photo", out)
 
     def test_explicit_settings_still_apply_to_camera_metadata(self):
@@ -820,18 +821,29 @@ class Provenance(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("capture strength: 0.5\n", out)
         self.assertIn("camera capture metadata", out)
+        self.assertNotIn("left off", out)
         self.assertNotIn("white balance: off", out)
 
-    def test_camera_metadata_check_needs_exposure_settings_and_no_ai_marker(self):
-        cases = {"no exposure settings": dict(iso=False),
-                 "an AI marker": dict(caption="Made with AI")}
-        for label, kwargs in cases.items():
-            with self.subTest(label):
-                src = self.camera_jpeg("p-%d.jpg" % len(label), **kwargs)
-                code, out, _ = run([src, "--origin", "generated", "--preset", "indoor", "--seed", "1"])
-                self.assertEqual(code, 0)
-                self.assertIn("capture strength: 0.5\n", out)
-                self.assertNotIn("camera capture metadata", out)
+    def test_camera_metadata_check_needs_exposure_settings(self):
+        src = self.camera_jpeg("p-noexp.jpg", iso=False)
+        code, out, _ = run([src, "--origin", "generated", "--preset", "indoor", "--seed", "1"])
+        self.assertEqual(code, 0)
+        self.assertIn("capture strength: 0.5\n", out)
+        self.assertNotIn("camera capture metadata", out)
+
+    def test_ai_edited_camera_photo_keeps_default_effects_off(self):
+        # phone AI edits (Magic Editor, Galaxy AI, generative fill) keep the camera's EXIF and add a marker
+        src = self.camera_jpeg("p-ai.jpg", caption="Made with AI")
+        code, out, _ = run([src, "--origin", "generated", "--preset", "indoor", "--seed", "1"])
+        self.assertEqual(code, 0)
+        self.assertIn("capture strength: 0\n", out)
+        self.assertIn("and an AI marker: it may be an AI edit of a camera photo", out)
+        self.assertNotIn("--origin camera", out)
+
+    def test_camera_capture_drops_control_characters(self):
+        src = self.camera_jpeg("esc.jpg", make="\x1b[2JApple\x7f")
+        with Image.open(src) as im:
+            self.assertEqual(realism.camera_capture(im), "[2JApple iPhone 13 Pro Max")
 
     def test_camera_origin_gets_no_extra_camera_metadata_warning(self):
         src = self.camera_jpeg("phone.jpg")
@@ -1136,16 +1148,16 @@ class Cli(unittest.TestCase):
         self.assertTrue(all(line.startswith(prefixes) for line in out.splitlines()))
 
     def test_default_capture_strength_depends_on_origin(self):
-        # 0.5 for generated and edited images; 0 for camera photos, which already have real
+        # 0.5 for generated images; 0 for camera and edited photos, which already have real
         # capture texture, so the script adds none unless asked
         src = self.save("in.png")
-        for origin, expected in (("generated", "0.5"), ("edited", "0.5"), ("camera", "0")):
+        for origin, expected in (("generated", "0.5"), ("edited", "0"), ("camera", "0")):
             with self.subTest(origin=origin):
                 code, out, _ = run([src, "--origin", origin, "--preset", "day", "--seed", "1",
                                     "-o", self.path("%s.jpg" % origin)])
                 self.assertEqual(code, 0)
                 self.assertIn("capture strength: %s\n" % expected, out)
-                self.assertEqual("no capture effects by default" in out, origin == "camera")
+                self.assertEqual("no capture effects by default" in out, origin != "generated")
 
     def test_camera_default_adds_no_capture_effects_but_explicit_strength_does(self):
         src = self.save("in.png")

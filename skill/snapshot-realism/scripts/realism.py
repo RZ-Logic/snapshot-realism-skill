@@ -1311,9 +1311,9 @@ def camera_capture(img):
             v = v[0] if v else ""
         if isinstance(v, bytes):
             v = v.decode("latin-1", "ignore")
-        v = " ".join(str(v or "").replace("\x00", " ").split())
+        v = " ".join("".join(c if c.isprintable() else " " for c in str(v or "")).split())
         if v and not COMFY_EXIF.match(v):
-            names.append(v[:40])
+            names.append(v[:32])
     if not names or not any(t in sub or t in tags for t in CAPTURE_TAGS):
         return ""
     if len(names) == 2 and names[1].lower().startswith(names[0].lower()):
@@ -1606,17 +1606,17 @@ def _run(argv, written):
     ap.add_argument("--compare", action="store_true", help="also write <output>_compare.jpg, before | after")
     ap.add_argument("--overwrite", action="store_true", help="replace existing output files (never the input)")
     ap.add_argument("--wb-strength", type=bounded(float, 0.0, 1.0),
-                    help="share of a detected color cast to remove, 0 to 1 (default 0.8 for edited and "
-                         "generated, 0 for camera photos, whose own white balance already ran, and for an "
-                         "input with camera capture metadata and no AI marker)")
+                    help="share of a detected color cast to remove, 0 to 1 (default 0.8 for generated; 0 for "
+                         "camera and edited photos, whose own white balance already ran, and for an input "
+                         "with camera capture metadata)")
     ap.add_argument("--warmth", type=bounded(float, -1.0, 1.0), default=0.0,
                     help="manual shift after auto white balance, -1 to 1: negative cools, positive warms (try -0.1)")
     ap.add_argument("--ca", type=bounded(float, 0.0, 0.01), default=0.001,
                     help="lateral chromatic aberration, 0 to 0.01 (default 0.001; 0 disables)")
     ap.add_argument("--capture-strength", type=bounded(float, 0.0, 3.0),
-                    help="strength of simulated capture artifacts, 0 to 3 (default 0.5 for edited and generated, "
-                         "0 for camera photos, which already have real capture texture, and for an input with camera "
-                         "capture metadata and no AI marker; 0 disables them); "
+                    help="strength of simulated capture artifacts, 0 to 3 (default 0.5 for generated; 0 for camera "
+                         "and edited photos, which already have real capture texture, and for an input with camera "
+                         "capture metadata; 0 disables them); "
                          "white balance and JPEG quality are controlled separately")
     ap.add_argument("--max-edge", type=bounded(int, 16, 8192), default=1600,
                     help="downscale so the long edge fits, 16 to 8192 (default 1600; never upscales)")
@@ -1695,19 +1695,30 @@ def _run(argv, written):
         notes.append("kept the capture date %s" % " ".join(dates[t] for t in DATE_TAGS if t in dates) if dates
                      else "the input has no capture date to keep")
     # the agent may not know a supplied image is a camera photo, so its metadata can switch the defaults off
-    camera_like = "" if reasons or args.origin == "camera" else camera_capture(src)
+    camera_like = "" if args.origin == "camera" else camera_capture(src)
     if camera_like:
-        cautions.append("the input carries camera capture metadata (%s) and no AI marker, so it may be a camera "
-                        "photo: capture effects and white balance stay off unless set with --capture-strength or "
-                        "--wb-strength. If it is a camera photo, rerun with --origin camera" % camera_like)
+        if args.origin == "edited":
+            what = "an edited input is a camera photo, so keep --origin edited"
+        elif reasons:
+            what = "it may be an AI edit of a camera photo; if it is, rerun with --origin edited"
+        else:
+            what = ("it may be a camera photo; ask the user, then rerun with --origin camera if it is their "
+                    "unedited photo or --origin edited if it was AI-edited")
+        off = [n for n, v in (("capture effects", args.capture_strength), ("white balance", args.wb_strength))
+               if v is None]
+        cautions.append("the input carries camera capture metadata (%s)%s: %s%s" % (
+            camera_like, " and an AI marker" if reasons else "", what,
+            ". Default %s left off; add them only if the user asks for that look" % " and ".join(off) if off else ""))
+    photo = args.origin != "generated" or bool(camera_like)  # an edited input is a camera photo too
     strength = args.wb_strength
     if strength is None:
-        strength = 0.0 if args.origin == "camera" or camera_like else 0.8
+        strength = 0.0 if photo else 0.8
     capture = args.capture_strength
     if capture is None:  # a real photo already has real capture texture; adding more only hurts it
-        capture = 0.0 if args.origin == "camera" or camera_like else 0.5
-        if args.origin == "camera":
-            notes.append("camera photos get no capture effects by default; --capture-strength 0.5 adds them")
+        capture = 0.0 if photo else 0.5
+        if photo and not camera_like:
+            notes.append("%s photos get no capture effects by default; --capture-strength 0.5 adds them"
+                         % args.origin)
 
     writing = False
     try:
@@ -1763,9 +1774,9 @@ def _run(argv, written):
         if info["strength"] > 0:
             print("white balance: removed %d%% of a %s cast (%s)%s"
                   % (round(info["strength"] * 100), describe_cast(info["cast"]), info["reason"], warmth))
-        elif (args.origin == "camera" or camera_like) and args.wb_strength is None:
+        elif photo and args.wb_strength is None:
             print("white balance: off for %s (%s; --wb-strength 0.8 turns it on)%s"
-                  % ("camera photos" if args.origin == "camera" else "a likely camera photo", found, warmth))
+                  % ("a likely camera photo" if camera_like else args.origin + " photos", found, warmth))
         else:
             print("white balance: no change (%s)%s" % (found, warmth))
     print("capture strength: %g" % info["capture_strength"])
