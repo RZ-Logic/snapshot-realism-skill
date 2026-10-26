@@ -75,7 +75,7 @@ touches them. Judge visible evidence, not tidiness:
   or support, including an object that floats with no contact, is Gate A; occlusion or an unfamiliar
   design is not.
 - **Arrangement:** objects lined up, evenly spaced or squared to the camera in a place the user
-  wants lived in, or any unasked house plant or flowers. A tidy room is not a defect.
+  wants lived in, or any unasked house plant or flowers indoors. A tidy room is not a defect.
 - **Materials:** creases and cushion compression that match weight and use; no repeated identical
   objects or textures, no uniformly inflated upholstery. Grain cannot add these.
 - **Light and depth:** background light, reflections and softness agree with the scene. Do not hide
@@ -162,7 +162,7 @@ slot that failed.
 | Glossy hair clumps with no flyaways | Subject slot | No |
 | Even, flattering light on a night scene | Light slot | No |
 | Creamy uniform background blur | Drop or translate the blur words (see above), ask for a phone | No |
-| Showroom background in a place the user wants lived in: objects lined up or evenly spaced, identical repeats, uniformly plump upholstery; or any unasked house plant or flowers | Scene and background pass: a specific place in use, one or two supported cues, the surfaces near the subject named, "No house plants or flowers.", light that falls off, tighter framing | No |
+| Showroom background in a place the user wants lived in: objects lined up or evenly spaced, identical repeats, uniformly plump upholstery; or any unasked house plant or flowers indoors | Scene and background pass: a specific place in use, one or two supported cues, the surfaces near the subject named, "No house plants or flowers.", light that falls off, tighter framing | No |
 
 The script fixes clean noiseless shadows and over-crisp lossless-looking detail, so they do not
 count toward Gate B. A warm yellow-orange cast counts as fixed only when the script's

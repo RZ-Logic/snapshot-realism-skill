@@ -65,7 +65,7 @@ try:  # HEIC/HEIF (the iPhone default) when pillow-heif is installed
 except ImportError:
     pass
 
-__version__ = "0.6.2"
+__version__ = "0.6.3"
 
 # shot/read: noise variance = shot * signal + read (linear light).
 # chroma: chroma noise relative to luma grain. smear: luma noise-reduction
