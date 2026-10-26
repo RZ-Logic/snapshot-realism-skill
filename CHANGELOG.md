@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.3 (2026-10-25)
+
+Corrections from an external review of the 0.6.2 docs. The script's processing is unchanged; only its version string moves.
+
+- Hand-graded count: the maintainer examined 284 distinct images, not 333. Rounds 3 and 5 reused 31 and 18 images from rounds 2 and 4, so the per-round counts add up to more. The 226 scores are unchanged. The README badge and section are corrected; the 0.6.2 entry below keeps its published wording.
+- Plant rule: SKILL.md step 1, the recipe's arrangement check and Gate B row, and the ChatGPT text now say indoors, matching the recipe's scene pass, so a garden or flower-stall prompt does not end with "No house plants or flowers." SKILL.md and the ChatGPT text also carry the plant-business exception.
+- Camera-fix labelling: the docs no longer say the labelling run leaves color, size and texture unchanged. It adds no capture effects or white balance and keeps the size, but the JPEG re-save changes pixels by about one level out of 255 on average (1.02 on the portrait demo, 0.88 on a phone photo).
+
 ## 0.6.2 (2026-10-25)
 
 Every change below comes from five hand-graded rounds: the maintainer examined 333 images and recorded 226 scores (see the README's hand-graded tests). The first, a review of 22 cases (20 scored: 18 generated scenes against plain generations, plus 2 of his own phone photos), found no script defect except too much grain at strength 1 at night, picked strength 0.5 as best in 10 of 17 generated cases, and found the script made his own photos worse or no better.

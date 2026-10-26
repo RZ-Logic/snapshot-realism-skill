@@ -5,7 +5,7 @@ license: MIT
 compatibility: Needs code execution with Python 3.9+, numpy and Pillow. Without it only the prompt recipe works. Optional C2PA signing (--sign) also needs c2pa-python 0.38+ on Python 3.10+.
 metadata:
   author: Rizwan Ahmed
-  version: "0.6.2"
+  version: "0.6.3"
 ---
 
 # Snapshot realism
@@ -51,8 +51,8 @@ check for identity drift before accepting it.
    requirement (soft light, bokeh, beautiful, cozy and the like), and tell the user what you dropped
    and translated. For night, describe what a phone night shot looks like and never pair "iPhone"
    with "high ISO, grainy". Ask for one or two capture imperfections, not a full checklist. Name the
-   setting specifically and apply the recipe's scene pass: no house plants or flowers unless asked,
-   ending the prompt with "No house plants or flowers." Show the rewritten prompt.
+   setting specifically and apply the recipe's scene pass: indoors, no plants or flowers unless asked
+   or the place sells them, ending with "No house plants or flowers." Show the rewritten prompt.
 2. **Generate** from the rewritten prompt, including supplied references for details that must carry
    over; portrait orientation for people unless asked. In Codex, use the built-in `image_gen` tool,
    passing the rewritten prompt as written: skip the imagegen skill's prompt augmentation and its
@@ -117,15 +117,15 @@ camera metadata, keep `edited`.
 
 ## Existing camera photo: fix camera imperfections
 
-A real photo already has real phone texture, so add none by default. Ask which imperfection to
-fix; if none, leave the photo alone. The script cannot remove color fringing, noise or blur (for a
-color cast, see white balance below). For those, or for flare, light streaks, ghosting, haze or
-dust, make a conservative AI edit: "Remove the [imperfection]. Change nothing else: keep every
-lamp, sign, word of text, sculpture and building exactly as it is." Without an image tool, give the
-user that prompt and continue when they supply the file. Image models redraw signs, text and
-fixtures, so compare them with the original at 100%. Then label the result without changing its
-color, size or texture: `generated` when the model returned a whole new frame (Codex `image_gen`
-and ChatGPT do), `edited` only for a masked inpaint that kept the other pixels:
+A real photo already has real phone texture, so add none by default. Ask which imperfection to fix;
+if none, leave the photo alone. The script cannot remove color fringing, noise or blur (for a color
+cast, see white balance below). For those, or for flare, light streaks, ghosting, haze or dust, make
+a conservative AI edit: "Remove the [imperfection]. Change nothing else: keep every lamp, sign, word
+of text, sculpture and building exactly as it is." Without an image tool, give the user that prompt
+and continue when they supply the file. Image models redraw signs, text and fixtures, so compare
+them with the original at 100%. Then label it with no capture effects or white balance (the JPEG
+re-save shifts pixels about one level): `generated` when the model returned a whole new frame (Codex
+`image_gen` and ChatGPT do), `edited` only for a masked inpaint that kept the other pixels:
 
 ```bash
 python <skill-dir>/scripts/realism.py FIXED --origin generated --preset <day|indoor|night> --capture-strength 0 --wb-strength 0 --max-edge 8192 --quality 95
@@ -230,14 +230,14 @@ result looks cold, rerun with `--wb-strength 0`.
 ## Metadata
 
 Nothing from the input's metadata is kept: no EXIF, GPS, date, XMP, ICC profile or C2PA manifest. The exceptions are the opt-in `--keep-date` and `--sign`, whose manifest carries the input's C2PA manifests as its parent's.
-Color outputs embed an sRGB profile; grayscale outputs stay grayscale without one. Every output gets EXIF `Software` set to `snapshot-realism 0.6.2`
+Color outputs embed an sRGB profile; grayscale outputs stay grayscale without one. Every output gets EXIF `Software` set to `snapshot-realism 0.6.3`
 and an EXIF `ImageDescription` stating the origin:
 
 | Origin | ImageDescription | XMP DigitalSourceType |
 |---|---|---|
-| `camera` | Post-processed with snapshot-realism 0.6.2: configurable capture processing; origin declared as camera, not verified | none |
-| `edited` | AI-edited image (camera photo with AI-generated content); post-processed with snapshot-realism 0.6.2 | `compositeWithTrainedAlgorithmicMedia` |
-| `generated` | AI-generated image; post-processed with snapshot-realism 0.6.2 | `trainedAlgorithmicMedia` |
+| `camera` | Post-processed with snapshot-realism 0.6.3: configurable capture processing; origin declared as camera, not verified | none |
+| `edited` | AI-edited image (camera photo with AI-generated content); post-processed with snapshot-realism 0.6.3 | `compositeWithTrainedAlgorithmicMedia` |
+| `generated` | AI-generated image; post-processed with snapshot-realism 0.6.3 | `trainedAlgorithmicMedia` |
 
 The script checks each output's metadata before writing it, and writes the image and the comparison
 together or not at all. The comparison carries the same origin.
