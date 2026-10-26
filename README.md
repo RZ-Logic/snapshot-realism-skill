@@ -14,6 +14,7 @@
   <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.9 or newer"/>
   <img src="https://img.shields.io/badge/Origin-Camera_%C2%B7_Edited_%C2%B7_Generated-2A9D4A?style=for-the-badge" alt="Origin is declared as camera, edited or generated"/>
   <img src="https://img.shields.io/badge/Version-0.6.2-555?style=for-the-badge" alt="Version 0.6.2"/>
+  <a href="#hand-graded-tests"><img src="https://img.shields.io/badge/Hand--graded-333_images-B5651D?style=for-the-badge" alt="Hand-graded: 333 images"/></a>
   <a href="https://github.com/RZ-Logic/snapshot-realism-skill/actions/workflows/tests.yml"><img src="https://img.shields.io/github/actions/workflow/status/RZ-Logic/snapshot-realism-skill/tests.yml?branch=main&label=Tests&style=for-the-badge" alt="Tests workflow status"/></a>
 </p>
 
@@ -149,7 +150,27 @@ Photos: the average per-channel change between the decoded input and the script 
 
 Measured the same way (`python tools/measure.py --script <older realism.py>`), 0.4.0 lifted a black patch by up to 11.6 DN (night, strength 3), its sharpening raised flat-area grain by up to 1.9x (day, strength 3), and its grain was single-pixel speckle (lag-2 autocorrelation 0.06 or less).
 
-What this does not show: whether people read the output as a phone photo. [`tools/blind_test.py`](tools/blind_test.py) builds side-by-side sheets in random order and scores how often the processed image is picked as the phone photo, with a one-sided binomial p-value. **No blind test has been run yet**, so there is no evidence of how the output reads to people. There is also no controlled set of camera photos; the Wharf and portrait examples are illustrations. The 0.2.0 to 0.3.0 white-balance measurements, made on two fixtures that have since left the repository, are in the [0.3.0 changelog](CHANGELOG.md).
+What these numbers do not show is whether people read the output as a phone photo. The hand-graded tests below cover that. There is no controlled set of camera photos; the Wharf and portrait examples are illustrations. The 0.2.0 to 0.3.0 white-balance measurements, made on two fixtures that have since left the repository, are in the [0.3.0 changelog](CHANGELOG.md).
+
+### Hand-graded tests
+
+Every rule added in 0.6.2 was decided by a person looking at the output. The maintainer inspected each image at full size and scored it on a fixed scale, with the pass rule written down before any image existed. Where the design allowed, the images were blinded: random file names, shuffled order, metadata stripped, and the key opened only after scoring. [`tools/blind_test.py`](tools/blind_test.py) built the side-by-side sheets for the pairwise rounds. Across five rounds, the maintainer examined 333 distinct images and recorded 226 scores:
+
+| Round | Compared | Graded | Result |
+|---|---|---|---|
+| 1. Pixel-peep review (2026-10-23) | 20 generated scenes (plain prompt against the skill's prompt, script at strength 0.5 and 1) and 2 of the maintainer's phone photos | 78 images in 20 scored cases (2 more were sent back for regeneration), each checked for seven kinds of script defect | No script defect apart from too much grain at strength 1 at night. Strength 0.5 was best in 10 of 17 cases, and the script made the real phone photos worse or no better. This led to the 0.5 default and no capture effects on camera photos. |
+| 2. Recipe A/B in Codex (2026-10-24) | The recipe with and without new face cues and a no-plants rule, 3 prompts with 2 draws per scene | 54 images, blind | Plants appeared in 22 of 27 images without the rule and 0 of 27 with it. Faces showed no measurable gain (1.17 against 1.04 on a 0 to 2 "looks AI" scale, p 0.40), and a freckle cue made freckles worse. Only the plant rule was kept. |
+| 3. Script test (2026-10-24) | Raw image against script output, strength 0.5 and 1, on the 31 images rated AI-looking in round 2 | 62 pairs of 93 images | The script side was picked in 56 of 58 decided pairs. On 17 sheets the grader noted the image still looked AI: the script removes the over-crisp, too-clean look, not the face. |
+| 4. Focus A/B in Codex (2026-10-25) | A "focus just behind the person" line against none, both run through the script | 54 images, blind | No clear gain (0.75 against 0.58, p 0.35), so the line was not kept. With the plant rule in both versions, plants appeared in 0 of 54 images. |
+| 5. Warm light (2026-10-25) | Lamp-lit scenes with no correction against `--warmth -0.1` and `-0.2` | 36 pairs of 54 images | The cooled side was picked in 18 of 18 pairs at `-0.2` and all 14 decided pairs at `-0.1`. This led to the warm-light rule. |
+
+Limits of these tests:
+- **One grader.** All scores are the maintainer's.
+- **One model and mostly indoor scenes.** Rounds 2 to 5 used OpenAI's image model through Codex, and their scenes were indoors.
+- **The blind only partly held.** The plants gave the version away in round 2 (the grader's guesses were right 91% of the time) and the softer look did in round 4 (74%).
+- **Pairwise rounds measure preference.** In rounds 3 and 5 the processed side is recognisable, so they show which version the grader preferred, not a blind pass rate.
+
+The test images and score sheets are not in this repository.
 
 <a id="what-ships"></a>
 ## 📦 What ships
@@ -324,7 +345,8 @@ Other projects attack the same "plastic" look from other directions. Grain, frin
 - The origin label is easy to remove, signed or not (see the [threat model](#provenance)); it helps honest users and honest platforms, and nobody else. A `make_cert.py` signer is unknown to validators.
 - White balance can only act on a clear near-neutral surface; many scenes get no correction.
 - HEIC input needs `pillow-heif`.
-- No blind test has been run and there is no controlled camera-photo benchmark. The Wharf and portrait examples are illustrations.
+- OpenAI's image model draws its default attractive face for young adults, most visibly in solo close portraits of women. Skin, hair, makeup and expression words change the face's surface, not its shape, and the script does not change faces ([hand-graded round 2](#hand-graded-tests)).
+- The hand-graded tests had one grader and were only partly blind, and there is no controlled camera-photo benchmark. The Wharf and portrait examples are illustrations.
 - It does not lay out thumbnails or typeset text. Uniformly noisy output can be less useful than the original; inspect the comparison before keeping it.
 
 <a id="installation"></a>

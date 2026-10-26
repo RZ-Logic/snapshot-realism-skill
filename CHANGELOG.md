@@ -23,6 +23,7 @@ From the maintainer's 22-case review (20 generated scenes against plain generati
 
 ### Docs
 
+- README: "Does it work?" gains a hand-graded tests section (five rounds, 333 images, 226 scores by the maintainer, with each round's limits) and no longer says no blind test has been run. Limits name the model's default face, and a badge links to the section.
 - The Muskoka Wharf script example pins `--capture-strength 1`, the setting its outputs were made with, and says camera photos get no capture effects by default.
 - Quickstart: the camera example is the fix-imperfections flow, and the default output names refer to the generated example.
 - The two Muskoka Wharf AI edits (`plaza-after.jpg`, `sculpture-after.jpg`) carry the AI-generated label in their metadata again. The supplied copies had lost it in transfer; it was re-added with `realism.py --origin generated --capture-strength 0 --wb-strength 0`, which applies no capture effects.
