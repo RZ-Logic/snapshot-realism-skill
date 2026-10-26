@@ -1,13 +1,33 @@
 # Changelog
 
-## Unreleased
+## 0.6.2 (2026-10-25)
 
-Tests, CI, release tooling and docs only. The skill and its ZIP are unchanged.
+Every change below comes from five hand-graded rounds: the maintainer examined 333 images and recorded 226 scores (see the README's hand-graded tests). The first, a review of 22 cases (20 scored: 18 generated scenes against plain generations, plus 2 of his own phone photos), found no script defect except too much grain at strength 1 at night, picked strength 0.5 as best in 10 of 17 generated cases, and found the script made his own photos worse or no better.
+
+### Script
+
+- `--capture-strength` defaults to 0.5 for `generated` (was 1). Strength 1 and above are unchanged.
+- An AI edit of a camera photo (`--origin edited`) is still a camera photo, so like `camera` it gets no capture effects or white balance by default (was strength 1 and white balance 0.8).
+- Camera photos get no capture effects by default (`--origin camera` defaults to strength 0, with a note): a real photo already has real phone texture. `--capture-strength` still adds them on request.
+- The agent may not know that a supplied image is a camera photo, so the script checks too: an input with camera capture metadata (a make or model plus exposure settings) gets no capture effects or white balance by default, whatever origin was declared or AI marker it carries, and a warning that says what to check: rerun as `--origin camera` only if it is the user's unedited photo, keep `edited` for an AI edit. Explicit `--capture-strength` and `--wb-strength` still apply. A photo whose metadata was stripped (messaging apps, screenshots) is not detected, so the instructions also ask.
+
+### Skill instructions
+
+- Warm-light scenes (a lamp, candles, sunset) run with `--wb-strength 0 --warmth -0.2` (was `--wb-strength 0`): the light stays warm, but the generator's extra warm tint comes out. In a pairwise check of 18 lamp-lit images (2026-10-25), the maintainer picked the cooled version over no correction in 18 of 18 at `-0.2` and in all 14 decided pairs at `-0.1`. Automatic white balance changed only 2 of the 18, because lamp-lit rooms seldom show a neutral surface.
+- A focus line (the phone focused just behind the person, so they are very slightly soft) was tested in a 54-image Codex run and not adopted: no clear gain (women rated AI 0.75 without it, 0.58 with it, p 0.35).
+- For an image the user supplies, the agent asks, unless the user said, whether it is a photo they took and whether an AI tool changed it, instead of assuming it is generated.
+- The camera-photo path is now "fix camera imperfections": ask which imperfection to fix and leave a photo with nothing to fix alone; make a conservative AI edit for flare, streaks, ghosting, haze or dust (the script cannot remove fringing, noise or blur); check signs and text at 100%; then label the result without changing its color, size or texture (`--capture-strength 0 --wb-strength 0 --max-edge 8192 --quality 95`), as `generated` when the image model returned a whole new frame, as Codex and ChatGPT do, and `edited` only for a masked inpaint. Without an image tool, the agent gives the user the edit prompt.
+- Prompt recipe: generators polish women hardest, so unless the request sets them, the subject slot pushes everyday makeup or none, hair as it sits at that time of day, a mid-thought expression and ordinary clothes; the recipe's example follows it. In a 4-case retest these changed makeup, hair and expression but not the face's shape (see Limits). House plants and flowers are kept out of indoor scenes unless the request asks for them or the place sells them: the prompt names what sits on the surfaces near the subject and ends with "No house plants or flowers.", and any unasked plant counts toward the showroom tell. In a 54-image Codex test of indoor scenes (2026-10-24), plants appeared in 0 of 27 images with this rule and 22 of 27 without it. Face cues tested alongside it (plain structural features, bare-face wording, light described by its dark side) showed no measurable gain and are not included.
+- Hand-back offers a rerun stronger (1) or at 0, from the new 0.5 default; the recipe's strength scale matches.
+- The skill description, the Codex default prompt, the `--origin` help and the Windows launcher no longer describe camera photos as processed directly.
 
 ### Docs
 
+- README: "Does it work?" gains a hand-graded tests section (five rounds, 333 images, 226 scores by the maintainer, with each round's limits) and no longer says no blind test has been run. Limits name the model's default face, and a badge links to the section.
+- The Muskoka Wharf script example pins `--capture-strength 1`, the setting its outputs were made with, and says camera photos get no capture effects by default.
+- Quickstart: the camera example is the fix-imperfections flow, and the default output names refer to the generated example.
 - The two Muskoka Wharf AI edits (`plaza-after.jpg`, `sculpture-after.jpg`) carry the AI-generated label in their metadata again. The supplied copies had lost it in transfer; it was re-added with `realism.py --origin generated --capture-strength 0 --wb-strength 0`, which applies no capture effects.
-- The Wharf edit captions say how the edits were made: Codex's image model removed the streaks and regenerated each scene, `realism.py` finished it and Codex exported Ultra HDR. The skill has no flare-removal step of its own.
+- The Wharf edit captions say how the edits were made: Codex's image model removed the streaks and regenerated each scene, `realism.py` finished it and Codex exported Ultra HDR. The script has no flare-removal step.
 - Limits: the generation and editing stage can fix faces, hands, text and objects when asked but can also redraw signs, text and fixtures, so check the result at 100%.
 
 ### Tests and CI

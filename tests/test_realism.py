@@ -789,6 +789,76 @@ class Provenance(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("C2PA Content Credentials are not carried over", out)
 
+    def camera_jpeg(self, name, make="Apple", model="iPhone 13 Pro Max", iso=True, caption=None):
+        exif = Image.Exif()
+        exif[0x010F] = make
+        exif[0x0110] = model
+        if iso:  # ISO, one of the exposure settings a camera writes, in the Exif IFD where cameras put it
+            exif[0x8769] = {0x8827: 400}
+        if caption:
+            exif[0x010E] = caption
+        buf = io.BytesIO()
+        to_image(scene() * WARM).save(buf, "JPEG", quality=95, exif=exif.tobytes())
+        return self.save(name, data=buf.getvalue())
+
+    def test_camera_metadata_keeps_default_effects_off_whatever_the_origin(self):
+        src = self.camera_jpeg("phone.jpg")
+        for origin in ("generated", "edited"):
+            with self.subTest(origin=origin):
+                code, out, _ = run([src, "--origin", origin, "--preset", "indoor", "--seed", "1",
+                                    "-o", self.path("%s.jpg" % origin)])
+                self.assertEqual(code, 0)
+                self.assertIn("capture strength: 0\n", out)
+                self.assertIn("warning: the input carries camera capture metadata (Apple iPhone 13 Pro Max): ", out)
+                self.assertIn("Default capture effects and white balance left off", out)
+                self.assertEqual("rerun with --origin camera" in out, origin == "generated")
+                self.assertIn("white balance: off for a likely camera photo", out)
+
+    def test_explicit_settings_still_apply_to_camera_metadata(self):
+        src = self.camera_jpeg("phone.jpg")
+        code, out, _ = run([src, "--origin", "generated", "--preset", "indoor", "--seed", "1",
+                            "--capture-strength", "0.5", "--wb-strength", "0.8"])
+        self.assertEqual(code, 0)
+        self.assertIn("capture strength: 0.5\n", out)
+        self.assertIn("camera capture metadata", out)
+        self.assertNotIn("left off", out)
+        self.assertNotIn("white balance: off", out)
+
+    def test_camera_metadata_check_needs_exposure_settings(self):
+        src = self.camera_jpeg("p-noexp.jpg", iso=False)
+        code, out, _ = run([src, "--origin", "generated", "--preset", "indoor", "--seed", "1"])
+        self.assertEqual(code, 0)
+        self.assertIn("capture strength: 0.5\n", out)
+        self.assertNotIn("camera capture metadata", out)
+
+    def test_ai_edited_camera_photo_keeps_default_effects_off(self):
+        # phone AI edits (Magic Editor, Galaxy AI, generative fill) keep the camera's EXIF and add a marker
+        src = self.camera_jpeg("p-ai.jpg", caption="Made with AI")
+        code, out, _ = run([src, "--origin", "generated", "--preset", "indoor", "--seed", "1"])
+        self.assertEqual(code, 0)
+        self.assertIn("capture strength: 0\n", out)
+        self.assertIn("and an AI marker: it may be an AI edit of a camera photo", out)
+        self.assertNotIn("--origin camera", out)
+
+    def test_camera_capture_drops_control_characters(self):
+        src = self.camera_jpeg("esc.jpg", make="\x1b[2JApple\x7f")
+        with Image.open(src) as im:
+            self.assertEqual(realism.camera_capture(im), "[2JApple iPhone 13 Pro Max")
+
+    def test_camera_origin_gets_no_extra_camera_metadata_warning(self):
+        src = self.camera_jpeg("phone.jpg")
+        code, out, _ = run([src, "--origin", "camera", "--preset", "indoor", "--seed", "1"])
+        self.assertEqual(code, 0)
+        self.assertNotIn("camera capture metadata", out)
+        self.assertIn("white balance: off for camera photos", out)
+
+    def test_camera_capture_names_the_camera_once(self):
+        src = self.camera_jpeg("canon.jpg", make="Canon", model="Canon EOS R5")
+        with Image.open(src) as im:
+            self.assertEqual(realism.camera_capture(im), "Canon EOS R5")
+        with Image.open(self.save("plain.png")) as im:
+            self.assertEqual(realism.camera_capture(im), "")
+
     def test_outputs_cannot_be_processed_again(self):
         src = self.save("once.png")
         self.assertEqual(run([src, "--origin", "generated", "--preset", "day"])[0], 0)
@@ -1073,9 +1143,37 @@ class Cli(unittest.TestCase):
         code, out, _ = run([src, "--origin", "generated", "--preset", "day", "--warmth", "-0.1"])
         self.assertEqual(code, 0)
         self.assertIn("warmth -0.10 applied", out)
-        self.assertIn("capture strength: 1", out)
+        self.assertIn("capture strength: 0.5", out)
         prefixes = ("note: ", "warning: ", "white balance: ", "capture strength: ", "wrote ")
         self.assertTrue(all(line.startswith(prefixes) for line in out.splitlines()))
+
+    def test_default_capture_strength_depends_on_origin(self):
+        # 0.5 for generated images; 0 for camera and edited photos, which already have real
+        # capture texture, so the script adds none unless asked
+        src = self.save("in.png")
+        for origin, expected in (("generated", "0.5"), ("edited", "0"), ("camera", "0")):
+            with self.subTest(origin=origin):
+                code, out, _ = run([src, "--origin", origin, "--preset", "day", "--seed", "1",
+                                    "-o", self.path("%s.jpg" % origin)])
+                self.assertEqual(code, 0)
+                self.assertIn("capture strength: %s\n" % expected, out)
+                self.assertEqual("no capture effects by default" in out, origin != "generated")
+
+    def test_camera_default_adds_no_capture_effects_but_explicit_strength_does(self):
+        src = self.save("in.png")
+        plain = self.path("plain.jpg")
+        self.assertEqual(run([src, "--origin", "camera", "--preset", "night", "--seed", "1", "-o", plain])[0], 0)
+        grain = self.path("grain.jpg")
+        code, out, _ = run([src, "--origin", "camera", "--preset", "night", "--seed", "1",
+                            "--capture-strength", "0.5", "-o", grain])
+        self.assertEqual(code, 0)
+        self.assertNotIn("no capture effects by default", out)
+        with Image.open(src) as a, Image.open(plain) as b, Image.open(grain) as c:
+            ref = np.asarray(a.convert("RGB"), np.float32)
+            off = np.abs(np.asarray(b.convert("RGB"), np.float32) - ref).mean()
+            on = np.abs(np.asarray(c.convert("RGB"), np.float32) - ref).mean()
+        self.assertLess(off, 1.5)  # only the JPEG re-save
+        self.assertGreater(on, off + 0.5)
 
     def test_non_ascii_name_with_a_cp1252_console(self):
         src = self.save("写真.png")
