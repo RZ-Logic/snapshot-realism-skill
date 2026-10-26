@@ -1,8 +1,8 @@
 # Changelog
 
-## 0.6.2 (2026-10-24)
+## 0.6.2 (2026-10-25)
 
-From the maintainer's 22-case review (20 generated scenes against plain generations, plus 2 of his own phone photos): no script defect in any case except too much grain at strength 1 at night, strength 0.5 picked as best in 10 of 17 generated cases, and the script making his own photos worse or no different.
+Every change below comes from five hand-graded rounds: the maintainer examined 333 images and recorded 226 scores (see the README's hand-graded tests). The first, a review of 22 cases (20 scored: 18 generated scenes against plain generations, plus 2 of his own phone photos), found no script defect except too much grain at strength 1 at night, picked strength 0.5 as best in 10 of 17 generated cases, and found the script made his own photos worse or no better.
 
 ### Script
 
@@ -17,7 +17,7 @@ From the maintainer's 22-case review (20 generated scenes against plain generati
 - A focus line (the phone focused just behind the person, so they are very slightly soft) was tested in a 54-image Codex run and not adopted: no clear gain (women rated AI 0.75 without it, 0.58 with it, p 0.35).
 - For an image the user supplies, the agent asks, unless the user said, whether it is a photo they took and whether an AI tool changed it, instead of assuming it is generated.
 - The camera-photo path is now "fix camera imperfections": ask which imperfection to fix and leave a photo with nothing to fix alone; make a conservative AI edit for flare, streaks, ghosting, haze or dust (the script cannot remove fringing, noise or blur); check signs and text at 100%; then label the result without changing its color, size or texture (`--capture-strength 0 --wb-strength 0 --max-edge 8192 --quality 95`), as `generated` when the image model returned a whole new frame, as Codex and ChatGPT do, and `edited` only for a masked inpaint. Without an image tool, the agent gives the user the edit prompt.
-- Prompt recipe: generators polish women hardest, so unless the request sets them, the subject slot pushes everyday makeup or none, hair as it sits at that time of day, a mid-thought expression and ordinary clothes; the recipe's example follows it. House plants and flowers are kept out of indoor scenes unless the request asks for them or the place sells them: the prompt names what sits on the surfaces near the subject and ends with "No house plants or flowers.", and any unasked plant counts toward the showroom tell. In a 54-image Codex test of indoor scenes (2026-10-24), plants appeared in 0 of 27 images with this rule and 22 of 27 without it. Face cues tested alongside it (plain structural features, bare-face wording, light described by its dark side) showed no measurable gain and are not included.
+- Prompt recipe: generators polish women hardest, so unless the request sets them, the subject slot pushes everyday makeup or none, hair as it sits at that time of day, a mid-thought expression and ordinary clothes; the recipe's example follows it. In a 4-case retest these changed makeup, hair and expression but not the face's shape (see Limits). House plants and flowers are kept out of indoor scenes unless the request asks for them or the place sells them: the prompt names what sits on the surfaces near the subject and ends with "No house plants or flowers.", and any unasked plant counts toward the showroom tell. In a 54-image Codex test of indoor scenes (2026-10-24), plants appeared in 0 of 27 images with this rule and 22 of 27 without it. Face cues tested alongside it (plain structural features, bare-face wording, light described by its dark side) showed no measurable gain and are not included.
 - Hand-back offers a rerun stronger (1) or at 0, from the new 0.5 default; the recipe's strength scale matches.
 - The skill description, the Codex default prompt, the `--origin` help and the Windows launcher no longer describe camera photos as processed directly.
 
