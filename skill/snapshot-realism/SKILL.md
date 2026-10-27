@@ -5,7 +5,7 @@ license: MIT
 compatibility: Needs code execution with Python 3.9+, numpy and Pillow. Without it only the prompt recipe works. Optional C2PA signing (--sign) also needs c2pa-python 0.38+ on Python 3.10+.
 metadata:
   author: Rizwan Ahmed
-  version: "0.6.3"
+  version: "0.6.4"
 ---
 
 # Snapshot realism
@@ -26,8 +26,9 @@ that an image is AI-generated or to pass a generated image off as a camera photo
 
 | Situation | Path | `--origin` |
 |---|---|---|
-| A genuine camera photo | Fix only the camera imperfections the user names; add no capture effects by default (see below). | `generated` after an AI fix (`edited` for a masked inpaint), else `camera` |
-| A camera photo with AI-generated parts (inpainting, object removal, generative fill) | Process the edited file directly. | `edited` |
+| The user's camera photo with a flaw to fix (flare, light streaks, haze, dust) | Fix only that flaw; add no capture effects (see below). | `generated` after an AI fix (`edited` for a masked inpaint), else `camera` |
+| The user's camera photo with content to change (a new background, objects added or removed, another setting) | AI edit, then the script with capture effects, so the new parts get phone texture (see below). | `generated` for a whole new frame (Codex, ChatGPT); `edited` for a masked edit |
+| A camera photo the user already edited with AI elsewhere (inpainting, generative fill) | Process the edited file as a content change (see below). | `edited` |
 | A newly generated scene, including one regenerated from a reference photo | Prompt recipe, generate, Gate A and Gate B, script, inspect, hand back. | `generated` |
 
 Anything Codex `image_gen` or ChatGPT produced is `generated`, whatever the input check says. For an
@@ -37,11 +38,10 @@ tool changed it; never assume `generated`: appearance alone does not establish w
 Always work on a copy in a writable folder; the script never overwrites the input. Capture strength
 changes capture artifacts, not faces, hair, pose or scene structure.
 
-For reference-guided generation, name the details the user wants kept, such as the same person's
-identity, setting or requested outfit. Unless the user locks them, allow small natural changes in
-posture, expression and hair to support a candid moment, along with requested skin or hair texture
-changes. Exact identity preservation is not guaranteed: compare the result with the reference and
-check for identity drift before accepting it.
+For reference-guided generation, name the details the user wants kept (the same person's identity,
+setting or outfit). Unless the user locks them, allow small natural changes in posture, expression
+and hair, and requested skin or hair texture changes. Identity is not guaranteed: compare the result
+with the reference for drift before accepting it.
 
 ## Newly generated scene
 
@@ -109,13 +109,18 @@ Finding the image:
 - **ChatGPT:** the image tool's output may not be visible to Python. If the script cannot find
   the image, ask the user to download it and upload it back into the chat.
 
-## AI edit of a camera photo
+## Changing a camera photo's content
 
-Same command with `--origin edited`; like a camera photo it gets no capture effects or white balance
-unless the user asks. Check the edited region for Gate A failures first. If the script warns of
-camera metadata, keep `edited`.
+When the user asks to change what their photo shows (a new background, objects added or removed,
+another setting), the new parts have no phone texture, so the script must add it. Codex `image_gen`
+and ChatGPT return a whole new frame: label it `generated` and run the newly-generated-scene command
+at its default strength, never the camera-fix label command below. A masked edit that kept the other
+pixels (inpainting, generative fill, a phone's AI editor) is `edited`: pass `--capture-strength 0.5`,
+since `edited` defaults to none and camera metadata also keeps it off. That grain lands on the real
+pixels too, so compare at 100% and lower it if the subject looks noisier than the original. Check the
+edited region for Gate A failures first; if the script warns of camera metadata, keep `edited`.
 
-## Existing camera photo: fix camera imperfections
+## Existing camera photo: fix a camera flaw
 
 A real photo already has real phone texture, so add none by default. Ask which imperfection to fix;
 if none, leave the photo alone. The script cannot remove color fringing, noise or blur (for a color
@@ -209,35 +214,29 @@ original.
 
 ## What the script does
 
-Decode to sRGB (every valid embedded color profile, such as Display P3, Adobe RGB or a gray profile, is applied, transparency
-is flattened onto white, 16-bit is scaled, grayscale stays grayscale, multi-frame files use frame
-1), downscale in linear light, white balance, lateral chromatic aberration, signal-dependent sensor
-noise (mottled luma grain plus chroma noise, strongest in shadows and fading toward the highlights,
-chroma faster, none in clipped highlights, and mean-preserving so blacks are not lifted), phone
-noise reduction (luma smear in flat areas, chroma blur), luma sharpening on edges only, JPEG with
-4:2:0 chroma. Sharpening tapers toward the corners. There is no vignetting, because phones correct
-lens shading. Toned and sepia images stay in color and get no white-balance correction. A JPEG over
-50 megapixels (phone photos up to 300 MP) is reduced while decoding, so a 200 MP photo opens; a
-photo too large to open safely is refused.
+Decode to sRGB (embedded color profiles applied, transparency flattened onto white, 16-bit scaled,
+grayscale kept, frame 1 of multi-frame files), downscale in linear light, white balance, lateral
+chromatic aberration, mottled sensor noise (strongest in shadows, none in clipped highlights,
+mean-preserving), phone noise reduction, edge-only luma sharpening that tapers toward the corners,
+JPEG with 4:2:0 chroma. No vignetting. Toned and sepia images keep their tone with no white balance.
+A JPEG over 50 megapixels is reduced while decoding; a photo too large to open safely is refused.
 
-White balance only corrects when the scene has a clear near-neutral surface, and the
-`white balance:` line says what it did and why. Foliage, cool light (blue hour, shade) and toned
-monochrome get no change; strongly warm surfaces (terracotta, peach walls, skin close-ups, golden
-hour) usually get little or none. Cream, beige or latte walls and pale skin can read as a warm cast,
-because their color matches a gray surface under warm light: if the line says `removed` and the
-result looks cold, rerun with `--wb-strength 0`.
+White balance only corrects when the scene shows a clear near-neutral surface; the `white balance:`
+line says what it did and why. Foliage, cool light and toned monochrome get no change, strongly warm
+surfaces little or none. Cream walls and pale skin can read as a warm cast: if the line says
+`removed` and the result looks cold, rerun with `--wb-strength 0`.
 
 ## Metadata
 
 Nothing from the input's metadata is kept: no EXIF, GPS, date, XMP, ICC profile or C2PA manifest. The exceptions are the opt-in `--keep-date` and `--sign`, whose manifest carries the input's C2PA manifests as its parent's.
-Color outputs embed an sRGB profile; grayscale outputs stay grayscale without one. Every output gets EXIF `Software` set to `snapshot-realism 0.6.3`
+Color outputs embed an sRGB profile; grayscale outputs stay grayscale without one. Every output gets EXIF `Software` set to `snapshot-realism 0.6.4`
 and an EXIF `ImageDescription` stating the origin:
 
 | Origin | ImageDescription | XMP DigitalSourceType |
 |---|---|---|
-| `camera` | Post-processed with snapshot-realism 0.6.3: configurable capture processing; origin declared as camera, not verified | none |
-| `edited` | AI-edited image (camera photo with AI-generated content); post-processed with snapshot-realism 0.6.3 | `compositeWithTrainedAlgorithmicMedia` |
-| `generated` | AI-generated image; post-processed with snapshot-realism 0.6.3 | `trainedAlgorithmicMedia` |
+| `camera` | Post-processed with snapshot-realism 0.6.4: configurable capture processing; origin declared as camera, not verified | none |
+| `edited` | AI-edited image (camera photo with AI-generated content); post-processed with snapshot-realism 0.6.4 | `compositeWithTrainedAlgorithmicMedia` |
+| `generated` | AI-generated image; post-processed with snapshot-realism 0.6.4 | `trainedAlgorithmicMedia` |
 
 The script checks each output's metadata before writing it, and writes the image and the comparison
 together or not at all. The comparison carries the same origin.
