@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.4 (2026-10-27)
+
+Routing for changes to a camera photo's content. The script's processing is unchanged; only its version string moves.
+
+- A request to change what a camera photo shows (a new background, objects added or removed, another setting) now has its own path. The new parts have no phone texture, so the script adds it: a whole new frame from Codex `image_gen` or ChatGPT is `generated` at the default strength, and a masked edit that kept the other pixels is `edited` with `--capture-strength 0.5`. Before, such a request could follow the camera-fix path, whose label command sets capture strength 0, or run as `edited`, which defaults to 0.
+- The camera-fix path is now only for camera flaws (flare, light streaks, haze, dust).
+- A masked edit's grain also lands on the real pixels, so the agent compares at 100% and lowers it if the subject looks noisier. Adding texture only where the pixels changed is not built yet.
+- SKILL.md's script and white-balance descriptions are shorter, to stay under 260 lines; the README keeps the full text.
+
 ## 0.6.3 (2026-10-25)
 
 Corrections from an external review of the 0.6.2 docs. The script's processing is unchanged; only its version string moves.
